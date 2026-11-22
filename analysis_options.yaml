@@ -1,0 +1,18 @@
+# Static analysis for the Pet Health Tracker app.
+# `flutter_lints` is the project's lint set; do not add rules that fight the
+# Material 3 theme or the `intl` date helpers.
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - macos/**
+
+linter:
+  rules:
+    # Keep the default `flutter_lints` set only: feature tasks in `lib/features/`
+    # must stay analysable under the same rules without extra tuning.
+    avoid_print: true

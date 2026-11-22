@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# tool/format — format lib/ and test/ with the workspace SDK.
+#
+# The sandbox blocks writes outside the workspace, so the analyzer/telemetry
+# HOME must be redirected exactly like tool/fv does. Usage:
+#   ./tool/format            # format lib test
+#   ./tool/format --set-exit-if-changed lib test
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+export FLUTTER_SUPPRESS_ANALYTICS=true
+
+if [ -d "$ROOT/.pub-cache" ]; then
+  export PUB_CACHE="$ROOT/.pub-cache"
+  export HOME="$ROOT/.tool-home"
+  mkdir -p "$HOME"
+fi
+
+if [ -x "$ROOT/.flutter-sdk/bin/cache/dart-sdk/bin/dart" ]; then
+  DART_BIN="$ROOT/.flutter-sdk/bin/cache/dart-sdk/bin/dart"
+elif command -v dart >/dev/null 2>&1; then
+  DART_BIN="$(command -v dart)"
+else
+  echo "tool/format: no workspace Dart SDK and no dart on PATH." >&2
+  exit 127
+fi
+
+if [ "$#" -eq 0 ]; then
+  set -- lib test
+fi
+
+exec "$DART_BIN" format "$@"

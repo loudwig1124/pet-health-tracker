@@ -1,0 +1,155 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:pet_health_tracker/domain/models/vaccination.dart';
+import 'package:pet_health_tracker/domain/rules/vaccination_due.dart';
+
+Vaccination vaccination({
+  required DateTime? nextDueDate,
+  String name = 'Rabies',
+}) {
+  return Vaccination(
+    id: 1,
+    petId: 1,
+    vaccineTypeId: 1,
+    vaccineName: name,
+    vaccinationDate: DateTime.utc(2025, 1, 1),
+    nextDueDate: nextDueDate,
+    createdAt: DateTime.utc(2025, 1, 1),
+  );
+}
+
+void main() {
+  final DateTime today = DateTime.utc(2026, 11, 21);
+
+  group('vaccinationDueStatus', () {
+    test('a missing due date means nothing is tracked', () {
+      expect(vaccinationDueStatus(null, today), VaccinationDueStatus.upToDate);
+    });
+
+    test('yesterday is overdue', () {
+      expect(
+        vaccinationDueStatus(DateTime.utc(2026, 11, 20), today),
+        VaccinationDueStatus.overdue,
+      );
+    });
+
+    test('today is due soon, not overdue', () {
+      expect(
+        vaccinationDueStatus(DateTime.utc(2026, 11, 21), today),
+        VaccinationDueStatus.dueSoon,
+      );
+    });
+
+    test('the window boundary is inclusive at 30 days', () {
+      expect(
+        vaccinationDueStatus(DateTime.utc(2026, 12, 21), today),
+        VaccinationDueStatus.dueSoon,
+      );
+      expect(
+        vaccinationDueStatus(DateTime.utc(2026, 12, 22), today),
+        VaccinationDueStatus.upToDate,
+      );
+    });
+
+    test('the time of day never changes the answer', () {
+      expect(
+        vaccinationDueStatus(
+          DateTime.utc(2026, 11, 21, 23, 59),
+          DateTime.utc(2026, 11, 21, 0, 1),
+        ),
+        VaccinationDueStatus.dueSoon,
+      );
+      expect(
+        vaccinationDueStatus(
+          DateTime.utc(2026, 11, 20, 23, 59),
+          DateTime.utc(2026, 11, 21, 0, 1),
+        ),
+        VaccinationDueStatus.overdue,
+      );
+    });
+
+    test('a zero-day window only flags today', () {
+      expect(
+        vaccinationDueStatus(DateTime.utc(2026, 11, 21), today, windowDays: 0),
+        VaccinationDueStatus.dueSoon,
+      );
+      expect(
+        vaccinationDueStatus(DateTime.utc(2026, 11, 22), today, windowDays: 0),
+        VaccinationDueStatus.upToDate,
+      );
+    });
+
+    test('a custom window moves the boundary', () {
+      expect(
+        vaccinationDueStatus(DateTime.utc(2026, 12, 10), today, windowDays: 7),
+        VaccinationDueStatus.upToDate,
+      );
+      expect(
+        vaccinationDueStatus(DateTime.utc(2026, 11, 25), today, windowDays: 7),
+        VaccinationDueStatus.dueSoon,
+      );
+    });
+  });
+
+  group('petVaccinationDueStatus', () {
+    test('no tracked due dates reads up to date', () {
+      expect(
+        petVaccinationDueStatus(const <Vaccination>[], today),
+        VaccinationDueStatus.upToDate,
+      );
+      expect(
+        petVaccinationDueStatus(<Vaccination>[
+          vaccination(nextDueDate: null),
+        ], today),
+        VaccinationDueStatus.upToDate,
+      );
+    });
+
+    test('the most urgent status wins', () {
+      final List<Vaccination> doses = <Vaccination>[
+        vaccination(nextDueDate: DateTime.utc(2027, 6, 1), name: 'DHPP'),
+        vaccination(nextDueDate: DateTime.utc(2026, 12, 1), name: 'FeLV'),
+        vaccination(nextDueDate: DateTime.utc(2026, 10, 1), name: 'Rabies'),
+      ];
+      expect(
+        petVaccinationDueStatus(doses, today),
+        VaccinationDueStatus.overdue,
+      );
+    });
+
+    test('due soon beats up to date', () {
+      final List<Vaccination> doses = <Vaccination>[
+        vaccination(nextDueDate: DateTime.utc(2027, 6, 1), name: 'DHPP'),
+        vaccination(nextDueDate: DateTime.utc(2026, 11, 25), name: 'FeLV'),
+      ];
+      expect(
+        petVaccinationDueStatus(doses, today),
+        VaccinationDueStatus.dueSoon,
+      );
+    });
+  });
+
+  group('nextDueVaccination', () {
+    test('returns the earliest due date, including overdue ones', () {
+      final List<Vaccination> doses = <Vaccination>[
+        vaccination(nextDueDate: DateTime.utc(2027, 6, 1), name: 'DHPP'),
+        vaccination(nextDueDate: DateTime.utc(2026, 9, 1), name: 'Rabies'),
+      ];
+      expect(nextDueVaccination(doses)!.vaccineName, 'Rabies');
+    });
+
+    test('ignores doses without a due date', () {
+      final List<Vaccination> doses = <Vaccination>[
+        vaccination(nextDueDate: null, name: 'Rabies'),
+        vaccination(nextDueDate: DateTime.utc(2027, 6, 1), name: 'DHPP'),
+      ];
+      expect(nextDueVaccination(doses)!.vaccineName, 'DHPP');
+    });
+
+    test('returns null when nothing is tracked', () {
+      expect(
+        nextDueVaccination(<Vaccination>[vaccination(nextDueDate: null)]),
+        isNull,
+      );
+    });
+  });
+}

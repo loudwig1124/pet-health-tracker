@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# tool/fv — the project's Flutter entry point.
+#
+# Runs the workspace-local SDK copy (`.flutter-sdk/`) instead of a system Flutter,
+# so the tool can write `bin/cache/lockfile`, artifacts and pub state *inside* the
+# project. The system SDK at /opt/homebrew/share/flutter is left untouched.
+# See tool/README.md for the SDK version and the one local patch the copy carries.
+#
+# Usage:
+#   ./tool/fv --version
+#   ./tool/fv pub get
+#   ./tool/fv analyze
+#   ./tool/fv test
+#
+# Sandbox containment (active only when `.pub-cache/` exists next to this repo,
+# which the sandbox bootstrap created): PUB_CACHE and HOME are redirected into the
+# workspace so `pub`, `flutter test` and the analyzer never write outside it.
+# On a normal developer machine (no `.pub-cache/` here) your usual caches are used.
+#
+# If the SDK copy is absent (e.g. after a fresh clone, where `.flutter-sdk/` is
+# gitignored), the wrapper runs whatever `flutter` is on PATH.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+# Analytics off: unified_analytics writes ~/.dart-tool/dart-flutter-telemetry.log,
+# which fails outside a writable HOME and would mask the real tool errors.
+export FLUTTER_SUPPRESS_ANALYTICS=true
+
+if [ -d "$ROOT/.pub-cache" ]; then
+  export PUB_CACHE="$ROOT/.pub-cache"
+  # HOME is redirected so pub/analyzer state stays inside the workspace. That
+  # also hides the real user's Xcode account store, which xcodebuild needs for
+  # device signing: set FV_REAL_HOME=1 for `run`/`build` on a physical device.
+  if [ "${FV_REAL_HOME:-0}" != "1" ]; then
+    export HOME="$ROOT/.tool-home"
+    mkdir -p "$HOME"
+  fi
+fi
+
+if [ -x "$ROOT/.flutter-sdk/bin/flutter" ]; then
+  FLUTTER_BIN="$ROOT/.flutter-sdk/bin/flutter"
+elif command -v flutter >/dev/null 2>&1; then
+  FLUTTER_BIN="$(command -v flutter)"
+else
+  echo "tool/fv: no .flutter-sdk/ copy and no flutter on PATH." >&2
+  exit 127
+fi
+
+exec "$FLUTTER_BIN" "$@"

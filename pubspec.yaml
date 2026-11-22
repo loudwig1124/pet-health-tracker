@@ -1,0 +1,33 @@
+name: pet_health_tracker
+description: "Pet Health Tracker — an offline pet health and vet appointment tracker."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  go_router: ^18.1.4
+  intl: ^0.20.3
+  path: ^1.9.1
+  sqflite: ^2.4.6
+  image_picker: ^1.2.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  sqflite_common_ffi: ^2.4.7
+
+flutter:
+  uses-material-design: true
+
+  # `db/schema.sql` is the single source of truth: the app applies the same DDL
+  # the CLI validates with `sqlite3 :memory: ".read db/schema.sql"`.
+  assets:
+    - db/schema.sql
