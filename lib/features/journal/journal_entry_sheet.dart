@@ -134,6 +134,33 @@ class _JournalEntryEditSheetState extends State<JournalEntryEditSheet> {
     if (_isSaving) {
       return;
     }
+    // One tap used to erase an entry for good; ask first.
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        title: const Text('Delete this entry?'),
+        content: const Text(
+          'It is removed from the journal, and this cannot be undone.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Keep'),
+          ),
+          TextButton(
+            key: const ValueKey<String>('journal-delete-confirm'),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: AppColors.overdue),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) {
+      return;
+    }
     setState(() => _isSaving = true);
     try {
       await widget.controller.deleteEntry(widget.entry.id);

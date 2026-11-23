@@ -34,12 +34,15 @@ class JournalController extends ChangeNotifier {
   /// Null means the whole household.
   int? get petFilterId => _petFilterId;
 
-  void selectPet(int? petId) {
+  Future<void> selectPet(int? petId) async {
     if (_petFilterId == petId) {
       return;
     }
     _petFilterId = petId;
     _notify();
+    // Reload scoped to the pet: filtering the household's latest 50 rows hid a
+    // busy household's older entries for a quiet pet.
+    await load();
   }
 
   /// The rows the screen shows: everything, or one pet's share of it.
@@ -69,8 +72,9 @@ class JournalController extends ChangeNotifier {
     _loadError = null;
     _notify();
     try {
-      final List<JournalEntry> entries = await _services.journal
-          .listHousehold();
+      final List<JournalEntry> entries = await _services.journal.listHousehold(
+        petId: _petFilterId,
+      );
       final List<Pet> pets = await _services.pets.list();
       _entries = entries;
       _pets = pets;
@@ -95,7 +99,7 @@ class JournalController extends ChangeNotifier {
   }
 
   Future<void> _reloadAfterMutation() async {
-    _entries = await _services.journal.listHousehold();
+    _entries = await _services.journal.listHousehold(petId: _petFilterId);
     _loadError = null;
     _notify();
   }

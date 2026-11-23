@@ -206,12 +206,32 @@ void main() {
     await clearSnackBar(tester);
   });
 
+
+  testWidgets('keeping the entry leaves it in the database', (
+    WidgetTester tester,
+  ) async {
+    await pumpJournal(tester);
+    await tapByKey(tester, 'journal-row-${fed.id}');
+    await tapByKey(tester, 'journal-edit-delete');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Keep'));
+    await tester.pumpAndSettle();
+
+    final JournalEntry? stored = await tester.runAsync<JournalEntry?>(
+      () => harness.services.journal.findById(fed.id),
+    );
+    expect(stored, isNotNull);
+  });
+
   testWidgets('deleting a row removes it from the feed and the database', (
     WidgetTester tester,
   ) async {
     await pumpJournal(tester);
     await tapByKey(tester, 'journal-row-${fed.id}');
     await tapByKey(tester, 'journal-edit-delete');
+    // Deleting is confirmed, not a single irreversible tap.
+    await tester.pumpAndSettle();
+    await tapByKey(tester, 'journal-delete-confirm');
 
     expect(find.text('Entry deleted.'), findsOneWidget);
     expect(find.byKey(ValueKey<String>('journal-row-${fed.id}')), findsNothing);
