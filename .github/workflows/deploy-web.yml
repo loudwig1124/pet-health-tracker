@@ -26,6 +26,10 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
+          # Pin to the SDK the project is built and tested against (AGENTS.md).
+          # Newer stables deprecate package:flutter/material.dart, which makes
+          # `flutter analyze` fail before the web build starts.
+          flutter-version: 3.47.5
           channel: stable
           cache: true
 
