@@ -189,7 +189,11 @@ class _PetFormSheetState extends State<PetFormSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return AppSheetBody(
+    // A save in flight must not be dismissed: the write would complete with
+    // the sheet gone and no way to show its error.
+    return PopScope(
+      canPop: !_saving,
+      child: AppSheetBody(
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,6 +338,7 @@ class _PetFormSheetState extends State<PetFormSheet> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

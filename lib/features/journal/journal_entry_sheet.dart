@@ -182,7 +182,11 @@ class _JournalEntryEditSheetState extends State<JournalEntryEditSheet> {
   @override
   Widget build(BuildContext context) {
     final DateTime local = widget.entry.occurredAt.toLocal();
-    return AppSheetBody(
+    // A save in flight must not be dismissed: the write would complete with
+    // the sheet gone and no way to show its error.
+    return PopScope(
+      canPop: !_isSaving,
+      child: AppSheetBody(
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -250,6 +254,7 @@ class _JournalEntryEditSheetState extends State<JournalEntryEditSheet> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

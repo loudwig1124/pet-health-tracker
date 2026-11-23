@@ -135,7 +135,11 @@ class _QuickLogFormState extends State<_QuickLogForm> {
 
   @override
   Widget build(BuildContext context) {
-    return AppSheetBody(
+    // A save in flight must not be dismissed: the write would complete with
+    // the sheet gone and no way to show its error.
+    return PopScope(
+      canPop: !_saving,
+      child: AppSheetBody(
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -228,6 +232,7 @@ class _QuickLogFormState extends State<_QuickLogForm> {
             const SizedBox(height: AppSpacing.sm),
           ],
         ),
+      ),
       ),
     );
   }
