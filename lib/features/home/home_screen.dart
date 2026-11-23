@@ -502,19 +502,30 @@ class _GreetingRow extends StatelessWidget {
           child: InkWell(
             key: const ValueKey<String>('home-owner-avatar'),
             onTap: onOpenProfile,
+            // A 56 px touch disc around a 44 px avatar: the press highlight
+            // fills the disc, so it reads as a halo wider than the circle.
+            radius: 28,
             customBorder: const CircleBorder(),
-            child: Container(
-              width: 44,
-              height: 44,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: statusBackground(AppColors.accent, AppColors.paper),
-                shape: BoxShape.circle,
-              ),
-              child: Text(
-                owner.initial,
-                style: Theme.of(context).textTheme.titleMedium
-                    ?.copyWith(color: AppColors.accent),
+            highlightColor: AppColors.accent.withValues(alpha: 0.14),
+            splashColor: AppColors.accent.withValues(alpha: 0.10),
+            child: SizedBox(
+              width: 56,
+              height: 56,
+              child: Center(
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: statusBackground(AppColors.accent, AppColors.paper),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    owner.initial,
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(color: AppColors.accent),
+                  ),
+                ),
               ),
             ),
           ),

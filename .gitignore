@@ -51,3 +51,6 @@ app.*.map.json
 .flutter-sdk/
 .pub-cache/
 .tool-home/
+
+# Screenshot harness output
+/test/shots/*.png
