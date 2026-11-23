@@ -21,6 +21,7 @@ import '../../ui/format/app_formats.dart';
 import '../../ui/kit/app_card.dart';
 import '../../ui/kit/app_chip.dart';
 import '../../ui/kit/empty_state.dart';
+import '../onboarding/first_run_card.dart';
 import '../../ui/kit/list_row.dart';
 import '../../ui/kit/primary_button.dart';
 import '../../ui/kit/section_label.dart';
@@ -325,14 +326,13 @@ class _HomeScreenState extends State<HomeScreen> {
         Padding(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.xl,
-            AppSpacing.xxl,
+            AppSpacing.lg,
             AppSpacing.xl,
             0,
           ),
-          child: EmptyState(
-            title: 'No pets yet',
-            message: 'Add the first pet to start the household notebook.',
-            action: PrimaryButton(label: 'Add a pet', onPressed: _openAddPet),
+          child: FirstRunCard(
+            services: _services!,
+            onDone: () => _controller!.load(),
           ),
         )
       else ...<Widget>[

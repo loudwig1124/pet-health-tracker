@@ -376,8 +376,12 @@ void main() {
       usePhoneSurface(tester);
       await pumpHome(tester, harness.services);
 
-      expect(find.text('No pets yet'), findsOneWidget);
-      expect(find.text('Add a pet'), findsOneWidget);
+      // An empty household gets onboarding, not a dead end.
+      expect(
+        find.byKey(const ValueKey<String>('first-run-card')),
+        findsOneWidget,
+      );
+      expect(find.text('Welcome'), findsOneWidget);
       expect(find.byType(PetPageDots), findsNothing);
       expect(tester.takeException(), isNull);
     });

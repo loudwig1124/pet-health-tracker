@@ -31,11 +31,15 @@ class AppSettings extends ChangeNotifier {
 
   final SettingsStore? _store;
 
+  /// Demo household visibility. On by default so the first launch has content;
+  /// onboarding takes over when the household is empty. On by default so the first launch has content;
+  /// onboarding takes over when the household is empty.
   bool _sampleDataEnabled = true;
   int _dueSoonWindowDays = defaultDueSoonWindowDays;
   WeightUnit _weightUnit = WeightUnit.kg;
 
-  /// Demo household visibility. On by default so the first launch has content.
+  /// Demo household visibility. On by default so the first launch has content;
+  /// onboarding takes over when the household is empty.
   bool get sampleDataEnabled => _sampleDataEnabled;
 
   /// Vaccinations due within this many days read "due soon".
