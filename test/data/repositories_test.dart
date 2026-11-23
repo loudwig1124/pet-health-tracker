@@ -49,7 +49,8 @@ void main() {
 
     test('the owner row is created on boot and can be edited', () async {
       final Owner owner = await harness.services.owners.load();
-      expect(owner.name, 'Maria Santos');
+      // An untouched household is nobody's yet.
+      expect(owner.name, kDefaultOwnerName);
       expect(owner.id, 1);
 
       final Owner saved = await harness.services.owners.save(
@@ -435,7 +436,7 @@ void main() {
 
     test('an empty household yields an empty dashboard snapshot', () async {
       final Dashboard dashboard = await harness.services.loadDashboard();
-      expect(dashboard.owner.name, 'Maria Santos');
+      expect(dashboard.owner.name, kDefaultOwnerName);
       expect(dashboard.pets, isEmpty);
       expect(dashboard.isEmpty, isTrue);
       expect(dashboard.nextAppointment, isNull);

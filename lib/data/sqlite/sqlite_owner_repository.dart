@@ -44,13 +44,14 @@ class SqliteOwnerRepository implements OwnerRepository {
     }
     final DateTime now = _clock().toUtc();
     final int id = await _db.insert(_table, <String, Object?>{
-      'name': 'Maria Santos',
+      // A placeholder, not a person: the Welcome card asks for the real name.
+      'name': kDefaultOwnerName,
       'email': '',
       'phone': '',
       'created_at': encodeInstant(now),
       'updated_at': encodeInstant(now),
     });
-    return Owner(id: id, name: 'Maria Santos', createdAt: now, updatedAt: now);
+    return Owner(id: id, name: kDefaultOwnerName, createdAt: now, updatedAt: now);
   }
 
   @override

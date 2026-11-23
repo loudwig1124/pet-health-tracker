@@ -529,7 +529,9 @@ class _GreetingRow extends StatelessWidget {
         ? 'Good morning'
         : (now.hour < 18 ? 'Good afternoon' : 'Good evening');
     final String trimmed = owner.name.trim();
-    if (trimmed.isEmpty) {
+    // The placeholder is not a person's name, so it does not belong in a
+    // greeting: "Good afternoon, My" would read like a bug.
+    if (trimmed.isEmpty || trimmed == kDefaultOwnerName) {
       return part;
     }
     return '$part, ${trimmed.split(RegExp(r'\s+')).first}';

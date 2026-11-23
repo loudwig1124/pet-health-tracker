@@ -9,6 +9,7 @@ library;
 import 'package:sqflite/sqflite.dart';
 
 import '../../domain/rules/calendar.dart';
+import '../../domain/models/owner.dart';
 import '../sqlite/app_database.dart';
 import '../sqlite/wire.dart';
 import 'seed_data.dart';
@@ -52,6 +53,15 @@ Future<void> seedDemoHousehold(Database db, {required DateTime now}) async {
   final int ownerId = await _ownerId(db);
 
   await db.transaction((Transaction txn) async {
+    // The demo is a persona: only rename an untouched placeholder, never a
+    // name the owner typed.
+    await txn.update(
+      'owner',
+      <String, Object?>{'name': 'Maria Santos'},
+      where: 'id = ? AND name = ?',
+      whereArgs: <Object?>[ownerId, kDefaultOwnerName],
+    );
+
     // Pets — Bella the dog and Miso the cat.
     await _insertIgnoring(txn, 'pet', <String, Object?>{
       'id': 9001,

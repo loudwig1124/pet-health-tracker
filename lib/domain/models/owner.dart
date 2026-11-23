@@ -57,3 +57,7 @@ class Owner {
     );
   }
 }
+
+/// Name a household starts with before anyone says who they are. The Welcome
+/// card, the reset's "forget my details" and the demo seeder all use it.
+const String kDefaultOwnerName = 'My household';
