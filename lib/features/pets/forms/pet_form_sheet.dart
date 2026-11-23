@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import '../../../app/app_services.dart';
 import '../../../domain/models/pet.dart';
 import '../../../domain/rules/pet_validation.dart';
+import '../../../domain/species.dart';
 import '../../../ui/kit/app_chip.dart';
 import '../../../ui/kit/app_sheet.dart';
 import '../../../ui/kit/primary_button.dart';
@@ -211,16 +212,29 @@ class _PetFormSheetState extends State<PetFormSheet> {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
-            TextField(
+            DropdownButtonFormField<String>(
               key: const ValueKey<String>('pet-form-species'),
-              controller: _species,
-              textCapitalization: TextCapitalization.words,
-              onChanged: (String value) => _clearError(PetField.species),
+              isExpanded: true,
+              initialValue: speciesOptions(_species.text).contains(_species.text)
+                  ? _species.text
+                  : null,
               decoration: InputDecoration(
                 labelText: 'Species',
-                hintText: 'Dog, cat, rabbit…',
                 errorText: _errors[PetField.species],
               ),
+              items: <DropdownMenuItem<String>>[
+                for (final String species in speciesOptions(_species.text))
+                  DropdownMenuItem<String>(value: species, child: Text(species)),
+              ],
+              onChanged: (String? value) {
+                if (value == null) {
+                  return;
+                }
+                setState(() {
+                  _species.text = value;
+                  _clearError(PetField.species);
+                });
+              },
             ),
             const SizedBox(height: AppSpacing.md),
             FormDateField(

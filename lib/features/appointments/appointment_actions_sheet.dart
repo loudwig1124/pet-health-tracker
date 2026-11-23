@@ -149,66 +149,110 @@ class _AppointmentActionsSheetState extends State<AppointmentActionsSheet> {
     final Appointment appointment = widget.appointment;
     final String petLabel = widget.controller.petLabelFor(appointment.petId);
     return AppSheetBody(
+      // No horizontal padding here: the action rows paint their press state to
+      // the sheet's edges, and the text gets its own 20 px inset below.
+      padding: const EdgeInsets.fromLTRB(0, 4, 0, 24),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            SectionLabel(
-              'Visit',
-              trailing: AppChip.appointment(appointment.status),
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-            ),
-            Text(
-              appointment.clinicName,
-              style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              '${appointment.purpose} · '
-              '${formatDateTimeLabel(appointment.scheduledAt)}',
-              style: AppTextStyles.caption,
-            ),
-            const SizedBox(height: 2),
-            Text(petLabel, style: AppTextStyles.caption),
-            if (appointment.status == AppointmentStatus.cancelled) ...<Widget>[
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Reason: ${appointment.cancelReason ?? 'Not recorded'}',
-                style: AppTextStyles.caption.copyWith(color: AppColors.overdue),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  SectionLabel(
+                    'Visit',
+                    trailing: AppChip.appointment(appointment.status),
+                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  ),
+                  Text(
+                    appointment.clinicName,
+                    style: AppTextStyles.body.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${appointment.purpose} · '
+                    '${formatDateTimeLabel(appointment.scheduledAt)}',
+                    style: AppTextStyles.caption,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(petLabel, style: AppTextStyles.caption),
+                  if (appointment.status ==
+                      AppointmentStatus.cancelled) ...<Widget>[
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Reason: ${appointment.cancelReason ?? 'Not recorded'}',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.overdue,
+                      ),
+                    ),
+                  ],
+                  if (appointment.completedAt != null) ...<Widget>[
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Completed '
+                      '${formatDateTimeLabel(appointment.completedAt!)}',
+                      style: AppTextStyles.caption,
+                    ),
+                  ],
+                ],
               ),
-            ],
-            if (appointment.completedAt != null) ...<Widget>[
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Completed ${formatDateTimeLabel(appointment.completedAt!)}',
-                style: AppTextStyles.caption,
-              ),
-            ],
+            ),
             if (appointment.status.isTerminal) ...<Widget>[
               const SizedBox(height: AppSpacing.md),
               const SectionLabel(
                 'Closed',
-                padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.xl,
+                  0,
+                  AppSpacing.xl,
+                  AppSpacing.sm,
+                ),
               ),
-              Text(
-                '${appointment.status.label} visits cannot be changed.',
-                style: AppTextStyles.body.copyWith(color: AppColors.secondary),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              PrimaryButton(
-                key: const ValueKey<String>('appointment-actions-close'),
-                label: 'Close',
-                onPressed: () => Navigator.of(context).pop(),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xl,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      '${appointment.status.label} visits cannot be changed.',
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.secondary,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    PrimaryButton(
+                      key: const ValueKey<String>(
+                        'appointment-actions-close',
+                      ),
+                      label: 'Close',
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
               ),
             ] else ...<Widget>[
               const SizedBox(height: AppSpacing.md),
               const SectionLabel(
                 'Actions',
-                padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.xl,
+                  0,
+                  AppSpacing.xl,
+                  AppSpacing.sm,
+                ),
               ),
               ListRow(
                 key: const ValueKey<String>('appointment-action-complete'),
+                horizontalInset: AppSpacing.xl,
                 title: 'Mark completed',
                 subtitle: 'The visit happened',
                 leading: const Icon(
@@ -223,6 +267,7 @@ class _AppointmentActionsSheetState extends State<AppointmentActionsSheet> {
               ),
               ListRow(
                 key: const ValueKey<String>('appointment-action-cancel'),
+                horizontalInset: AppSpacing.xl,
                 title: 'Cancel appointment',
                 subtitle: 'The reason stays on the record',
                 leading: const Icon(
@@ -237,6 +282,7 @@ class _AppointmentActionsSheetState extends State<AppointmentActionsSheet> {
               ),
               ListRow(
                 key: const ValueKey<String>('appointment-action-no-show'),
+                horizontalInset: AppSpacing.xl,
                 title: 'Mark no-show',
                 subtitle: _canNoShow
                     ? 'The visit was missed'
@@ -253,6 +299,7 @@ class _AppointmentActionsSheetState extends State<AppointmentActionsSheet> {
               ),
               ListRow(
                 key: const ValueKey<String>('appointment-action-reschedule'),
+                horizontalInset: AppSpacing.xl,
                 title: 'Reschedule',
                 subtitle: 'Cancels this visit and books a new one',
                 leading: const Icon(
@@ -269,7 +316,10 @@ class _AppointmentActionsSheetState extends State<AppointmentActionsSheet> {
               ),
               if (widget.showViewInSection)
                 ListRow(
-                  key: const ValueKey<String>('appointment-action-view-section'),
+                  key: const ValueKey<String>(
+                    'appointment-action-view-section',
+                  ),
+                  horizontalInset: AppSpacing.xl,
                   title: 'View in Appointments',
                   subtitle: 'Opens the list filtered to this pet',
                   leading: const Icon(
@@ -290,10 +340,17 @@ class _AppointmentActionsSheetState extends State<AppointmentActionsSheet> {
                         ),
                 ),
               const SizedBox(height: AppSpacing.lg),
-              SecondaryButton(
-                key: const ValueKey<String>('appointment-actions-dismiss'),
-                label: 'Keep as is',
-                onPressed: _isBusy ? null : () => Navigator.of(context).pop(),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xl,
+                ),
+                child: SecondaryButton(
+                  key: const ValueKey<String>('appointment-actions-dismiss'),
+                  label: 'Keep as is',
+                  onPressed: _isBusy
+                      ? null
+                      : () => Navigator.of(context).pop(),
+                ),
               ),
             ],
           ],

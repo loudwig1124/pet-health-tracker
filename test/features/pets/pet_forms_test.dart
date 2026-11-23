@@ -86,10 +86,10 @@ void main() {
       find.byKey(const ValueKey<String>('pet-form-name')),
       'Tofu',
     );
-    await tester.enterText(
-      find.byKey(const ValueKey<String>('pet-form-species')),
-      'Cat',
-    );
+    await tester.tap(find.byKey(const ValueKey<String>('pet-form-species')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cat').last);
+    await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(const ValueKey<String>('pet-form-weight')),
       '4.6',

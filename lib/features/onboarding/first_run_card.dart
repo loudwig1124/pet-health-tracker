@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import '../../app/app_services.dart';
 import '../../domain/models/owner.dart';
 import '../../domain/models/pet.dart';
+import '../../domain/species.dart';
 import '../../ui/kit/app_card.dart';
 import '../../ui/kit/primary_button.dart';
 import '../../ui/theme/app_theme.dart';
@@ -30,7 +31,7 @@ class FirstRunCard extends StatefulWidget {
 class _FirstRunCardState extends State<FirstRunCard> {
   final TextEditingController _owner = TextEditingController();
   final TextEditingController _pet = TextEditingController();
-  final TextEditingController _species = TextEditingController(text: 'Dog');
+  String _species = 'Dog';
   final TextEditingController _weight = TextEditingController(text: '5');
   late DateTime _birthday = widget.services.today().subtract(
     const Duration(days: 365),
@@ -42,7 +43,6 @@ class _FirstRunCardState extends State<FirstRunCard> {
   void dispose() {
     _owner.dispose();
     _pet.dispose();
-    _species.dispose();
     _weight.dispose();
     super.dispose();
   }
@@ -50,8 +50,10 @@ class _FirstRunCardState extends State<FirstRunCard> {
   Future<void> _create() async {
     final String ownerName = _owner.text.trim();
     final String petName = _pet.text.trim();
-    final String species = _species.text.trim();
-    final double? weight = double.tryParse(_weight.text.trim());
+    final String species = _species.trim();
+    final double? weight = double.tryParse(
+      _weight.text.trim().replaceAll(',', '.'),
+    );
     if (ownerName.isEmpty || petName.isEmpty || species.isEmpty) {
       setState(() => _error = 'Add your name, your pet\'s name and species.');
       return;
@@ -126,11 +128,23 @@ class _FirstRunCardState extends State<FirstRunCard> {
           Row(
             children: <Widget>[
               Expanded(
-                child: TextField(
+                child: DropdownButtonFormField<String>(
                   key: const ValueKey<String>('first-run-species'),
-                  controller: _species,
-                  textCapitalization: TextCapitalization.words,
+                  isExpanded: true,
+                  initialValue: _species,
                   decoration: const InputDecoration(labelText: 'Species'),
+                  items: <DropdownMenuItem<String>>[
+                    for (final String species in kCommonSpecies)
+                      DropdownMenuItem<String>(
+                        value: species,
+                        child: Text(species),
+                      ),
+                  ],
+                  onChanged: (String? value) {
+                    if (value != null) {
+                      setState(() => _species = value);
+                    }
+                  },
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -139,7 +153,9 @@ class _FirstRunCardState extends State<FirstRunCard> {
                 child: TextField(
                   key: const ValueKey<String>('first-run-weight'),
                   controller: _weight,
-                  keyboardType: TextInputType.number,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: const InputDecoration(labelText: 'kg'),
                 ),
               ),
