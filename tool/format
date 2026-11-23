@@ -29,4 +29,13 @@ if [ "$#" -eq 0 ]; then
   set -- lib test
 fi
 
+# A check must not rewrite the tree. `dart format --set-exit-if-changed` still
+# writes the formatted files unless told otherwise, which once reformatted 18
+# files during a "check".
+for arg in "$@"; do
+  if [ "$arg" = "--set-exit-if-changed" ]; then
+    exec "$DART_BIN" format --output=none "$@"
+  fi
+done
+
 exec "$DART_BIN" format "$@"
