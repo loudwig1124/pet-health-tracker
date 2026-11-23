@@ -5,6 +5,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../app/app_scope.dart';
+import '../../app/navigation_requests.dart';
 import '../../app/shell/app_shell.dart';
 import '../../domain/models/appointment.dart';
 import '../../domain/models/pet.dart';
@@ -44,6 +45,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       _branchActive = active;
       if (active) {
         controller.load();
+        _applyRequestedFilter();
       }
       return;
     }
@@ -51,6 +53,19 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       _controller!.load();
     }
     _branchActive = active;
+    if (active) {
+      _applyRequestedFilter();
+    }
+  }
+
+  /// A tap on Home's appointment card asks for one pet; take it and clear it.
+  void _applyRequestedFilter() {
+    final int? pending = NavigationRequests.appointmentsPetFilter.value;
+    if (pending == null) {
+      return;
+    }
+    NavigationRequests.appointmentsPetFilter.value = null;
+    _controller?.selectPet(pending);
   }
 
   @override

@@ -156,16 +156,32 @@ class _PetFormSheetState extends State<PetFormSheet> {
   Future<void> _pickPhoto() async {
     try {
       final String? path = await PetPhotos().pickFromLibrary();
-      if (path == null || !mounted) {
-        return;
-      }
-      setState(() => _photo.text = path);
-    } catch (_) {
       if (!mounted) {
         return;
       }
+      if (path == null) {
+        // The user backed out of the picker. Say so, so "nothing happened"
+        // can be told apart from a failure.
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No photo chosen.')),
+        );
+        return;
+      }
+      setState(() => _photo.text = path);
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      // Surface the real reason: a plugin that never registered and a missing
+      // permission look identical otherwise.
+      final String detail = error.toString();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open the photo library.')),
+        SnackBar(
+          duration: const Duration(seconds: 8),
+          content: Text(
+            detail.length > 220 ? detail.substring(0, 220) : detail,
+          ),
+        ),
       );
     }
   }

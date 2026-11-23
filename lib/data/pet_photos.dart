@@ -27,6 +27,9 @@ class PetPhotos {
       maxWidth: 1024,
       maxHeight: 1024,
       imageQuality: 85,
+      // Picking alone needs no photo-library permission: iOS uses PHPicker.
+      // Asking for full metadata is what triggers the access prompt.
+      requestFullMetadata: false,
     );
     if (picked == null) {
       return null;

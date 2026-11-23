@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/app_scope.dart';
+import '../../app/navigation_requests.dart';
 import '../../app/shell/app_shell.dart';
 import '../../app/app_services.dart';
 import '../../app/router.dart';
@@ -22,6 +23,7 @@ import '../../ui/kit/app_card.dart';
 import '../../ui/kit/app_chip.dart';
 import '../../ui/kit/empty_state.dart';
 import '../onboarding/first_run_card.dart';
+import '../pets/forms/pet_form_sheet.dart';
 import '../../ui/kit/list_row.dart';
 import '../../ui/kit/primary_button.dart';
 import '../../ui/kit/section_label.dart';
@@ -168,13 +170,30 @@ class _HomeScreenState extends State<HomeScreen> {
     await _controller?.refresh();
   }
 
-  void _openAddPet() {
+  Future<void> _openAddPet() async {
     final VoidCallback? handler = widget.onAddPet;
     if (handler != null) {
       handler();
       return;
     }
-    _goTo(Routes.profile);
+    // Stay on Home and open the form over it, instead of sending the user to
+    // Profile to add a pet.
+    final bool? saved = await showPetForm(context, services: _services!);
+    if (saved == true) {
+      await _controller!.load();
+    }
+  }
+
+  /// Switches to Appointments through the shell (so it fades) and asks it to
+  /// focus one pet.
+  void _openAppointments({int? petId}) {
+    NavigationRequests.appointmentsPetFilter.value = petId;
+    final AppShellSelection? shell = AppShellSelection.maybeOf(context);
+    if (shell != null) {
+      shell.select(AppShellSelection.appointments);
+      return;
+    }
+    _goTo(Routes.appointments);
   }
 
   Future<void> _quickLog(JournalKind kind) async {
@@ -405,12 +424,12 @@ class _HomeScreenState extends State<HomeScreen> {
             0,
           ),
           child: next == null
-              ? _NoUpcomingVisit(onTap: () => _goTo(Routes.appointments))
+              ? _NoUpcomingVisit(onTap: () => _openAppointments())
               : NextAppointmentCard(
                   key: const ValueKey<String>('next-appointment'),
                   appointment: next,
                   petName: next.petId == null ? null : petNames[next.petId],
-                  onTap: () => _goTo(Routes.appointments),
+                  onTap: () => _openAppointments(petId: next.petId),
                 ),
         ),
         const Padding(
