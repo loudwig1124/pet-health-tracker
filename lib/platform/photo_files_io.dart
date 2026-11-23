@@ -11,6 +11,3 @@ bool photoExists(String? path) {
   }
   return File(trimmed).existsSync();
 }
-
-/// Photo picking exists on every platform with a filesystem.
-bool get supportsPhotoPicking => true;

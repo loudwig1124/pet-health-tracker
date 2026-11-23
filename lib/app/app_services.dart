@@ -98,11 +98,28 @@ class AppServices {
   /// Keeps the Profile "Sample data" toggle and the rows it controls in step.
   Future<void> setSampleDataEnabled(bool enabled) async {
     if (enabled) {
+      // Reseed rather than "insert if missing": the demo's visits and doses are
+      // relative to the day they are created, so a stale demo would show dates
+      // from whenever it was first seeded.
+      await sampleData.clearDemo();
       await sampleData.seedDemo();
     } else {
       await sampleData.clearDemo();
+      await _restoreOwnerIfDemoPersona();
     }
     await settings.setSampleDataEnabled(enabled);
+  }
+
+  /// The demo seeder renames an untouched household to its persona. Clearing
+  /// the demo should give the placeholder back, but never touch a name (or
+  /// contact details) the owner actually typed.
+  Future<void> _restoreOwnerIfDemoPersona() async {
+    final Owner owner = await owners.load();
+    if (owner.name == 'Maria Santos' &&
+        owner.email.isEmpty &&
+        owner.phone.isEmpty) {
+      await owners.save(const OwnerDraft(name: kDefaultOwnerName));
+    }
   }
 
   /// Home's read model, using the persisted due-soon window.

@@ -514,7 +514,11 @@ void main() {
 
         expect(await harness.services.pets.list(), isEmpty);
         expect(await harness.services.sampleData.hasDemoData(), isFalse);
-        expect((await harness.services.owners.load()).name, 'Maria Santos');
+        // The demo persona leaves with the demo; the household is unnamed again.
+        expect(
+          (await harness.services.owners.load()).name,
+          kDefaultOwnerName,
+        );
         expect(await harness.services.vaccineTypes.list(), hasLength(7));
         expect(harness.services.settings.sampleDataEnabled, isFalse);
         expect(
@@ -524,6 +528,8 @@ void main() {
 
         await harness.services.setSampleDataEnabled(true);
         expect(await harness.services.pets.list(), hasLength(2));
+        // Re-enabling brings the persona back with the demo rows.
+        expect((await harness.services.owners.load()).name, 'Maria Santos');
         expect(harness.services.settings.sampleDataEnabled, isTrue);
       },
     );

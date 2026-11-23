@@ -34,11 +34,14 @@
 --   * exactly one `owner` row (the household); no auth, no accounts.
 -- =============================================================================
 
--- Per connection: sqflite's onConfigure also sets these, so the app is covered
--- even though CREATE-time pragmas inside a transaction are no-ops. They stay
--- here so the CLI smoke test imports the file exactly as the app does.
+-- Per connection: sqflite's onConfigure sets foreign_keys and busy_timeout on
+-- every connection, which is where they take effect (CREATE-time pragmas inside
+-- a transaction are no-ops). They stay here so the CLI smoke test imports the
+-- file exactly as the app does.
+--
+-- No WAL: the app opens one connection and never reads while another writes, so
+-- write-ahead logging would add two sidecar files for no benefit.
 PRAGMA foreign_keys = ON;
-PRAGMA journal_mode = WAL;
 PRAGMA busy_timeout = 5000;
 
 -- -----------------------------------------------------------------------------
