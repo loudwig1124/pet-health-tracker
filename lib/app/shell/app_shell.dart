@@ -11,7 +11,7 @@ import 'centre_action_sheet.dart';
 /// Height of the bar itself (the raised button adds 26 px above it).
 /// How far the bar's content (tabs and the centre action) sits below the top of
 /// the paper, to close the gap above the screen's bottom edge.
-const double kShellBarContentTop = 6;
+const double kShellBarContentTop = 12;
 
 /// Height of the paper bar below the content. Independent of the centre
 /// action: the action is centred inside it, so growing the bar gives the tab
