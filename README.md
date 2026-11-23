@@ -64,6 +64,36 @@ absent, so a clone without the sandbox SDK still works. Do not copy
 `.flutter-sdk/`, `.pub-cache/` or `.tool-home/` between machines — they are
 gitignored workspace artifacts; see [`tool/README.md`](tool/README.md).
 
+## Publishing it for other people
+
+Two different things people can mean by "try my app":
+
+| Audience | Give them | They need |
+| --- | --- | --- |
+| Friends who just want to use it in a browser | The **Pages URL** (or a zip of `build/web`) | Nothing — a browser |
+| Friends who want to run it from source | The **repository** | Flutter + `flutter run -d chrome` |
+
+GitHub Pages is automated: `.github/workflows/deploy-web.yml` builds the web
+bundle on every push to `main` and publishes it. Enable it once under
+**Settings → Pages → Source: GitHub Actions**, and the app will be at
+`https://<you>.github.io/<repo>/`.
+
+To build the bundle yourself:
+
+```bash
+flutter build web --release --base-href "/<repo>/"
+# then serve build/web from any static server
+```
+
+The `--base-href` matters: without it the bundle assumes it is served from the
+domain root, and the app loads a blank page under a repository path. A lone
+`index.html` opened from `file://` will not work either — Flutter web needs an
+HTTP server.
+
+On the web the app stores its database in the browser's IndexedDB, so every
+visitor gets their own household, and clearing site data resets it. Pet photos
+are not available in the browser; the drawn portrait is used instead.
+
 ## First launch
 
 The app creates `pet_health_tracker.db`, the household owner row and the vaccine
