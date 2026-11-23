@@ -209,8 +209,9 @@ void main() {
     );
     expect(find.text('Scheduled'), findsNWidgets(2));
     expect(
+      // The separator is glued to the time with a non-breaking space.
       find.text(
-        'Annual wellness check · ${formatTimeOfDay(futureVisit.scheduledAt)}',
+        'Annual wellness check ·\u00A0${formatTimeOfDay(futureVisit.scheduledAt)}',
       ),
       findsOneWidget,
     );

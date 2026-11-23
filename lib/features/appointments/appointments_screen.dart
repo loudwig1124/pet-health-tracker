@@ -311,7 +311,9 @@ class _AppointmentCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${appointment.purpose} · ${formatTimeOfDay(local)}',
+                  // A non-breaking space keeps "· 9:30 AM" together, so the
+                  // separator never dangles at the end of a wrapped line.
+                  '${appointment.purpose} ·\u00A0${formatTimeOfDay(local)}',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.caption,
