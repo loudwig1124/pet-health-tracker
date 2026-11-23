@@ -5,6 +5,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../app/app_scope.dart';
+import '../../app/navigation_requests.dart';
 import '../../app/shell/app_shell.dart';
 import '../../app/app_services.dart';
 import '../../app/app_settings.dart';
@@ -55,6 +56,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       // `AppScope.of` cannot run in initState; this is the first safe lookup.
       _services = AppScope.of(context);
       _controller = ProfileController(services: _services)..load();
+      NavigationRequests.householdRevision.addListener(_onHouseholdWrite);
       _branchActive = active;
       return;
     }
@@ -64,8 +66,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _branchActive = active;
   }
 
+  /// Another screen wrote something: the counts and pet rows may be stale.
+  void _onHouseholdWrite() {
+    if (!mounted || !TickerMode.valuesOf(context).enabled) {
+      return;
+    }
+    _controller.load();
+  }
+
   @override
   void dispose() {
+    NavigationRequests.householdRevision.removeListener(_onHouseholdWrite);
     _controller.dispose();
     super.dispose();
   }

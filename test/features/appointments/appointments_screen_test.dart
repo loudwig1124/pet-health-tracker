@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_health_tracker/app/app_scope.dart';
+import 'package:pet_health_tracker/app/navigation_requests.dart';
 import 'package:pet_health_tracker/domain/models/appointment.dart';
 import 'package:pet_health_tracker/domain/models/pet.dart';
 import 'package:pet_health_tracker/features/appointments/appointments_screen.dart';
@@ -165,6 +166,29 @@ void main() {
     await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();
   }
+
+
+  testWidgets('a write from elsewhere refreshes this already-open tab', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppointments(tester);
+    // The centre action writes the visit and stays on this branch, so no tab
+    // switch ever happens to refresh it.
+    await tester.runAsync(
+      () => harness.services.appointments.create(
+        AppointmentDraft(
+          petId: bella.id,
+          clinicName: 'Reload Clinic',
+          purpose: 'Booster follow-up',
+          scheduledAt: now.add(const Duration(days: 2)),
+        ),
+      ),
+    );
+    NavigationRequests.bumpHousehold();
+    await settleDatabase(tester);
+
+    expect(find.text('Reload Clinic'), findsOneWidget);
+  });
 
   testWidgets('the segmented control splits upcoming from past', (
     WidgetTester tester,

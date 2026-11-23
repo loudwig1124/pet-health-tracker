@@ -42,6 +42,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         AppScope.of(context),
       );
       _controller = controller;
+        NavigationRequests.householdRevision.addListener(_onHouseholdWrite);
       _branchActive = active;
       if (active) {
         controller.load();
@@ -68,8 +69,18 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     _controller?.selectPet(pending);
   }
 
+  /// Another screen wrote something: refresh, but only while this branch is
+  /// the visible one — an inactive branch reloads when it becomes active.
+  void _onHouseholdWrite() {
+    if (!mounted || !TickerMode.valuesOf(context).enabled) {
+      return;
+    }
+    _controller?.load();
+  }
+
   @override
   void dispose() {
+    NavigationRequests.householdRevision.removeListener(_onHouseholdWrite);
     _controller?.dispose();
     super.dispose();
   }

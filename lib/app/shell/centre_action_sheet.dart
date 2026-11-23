@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../domain/models/journal_entry.dart';
 import '../../domain/models/pet.dart';
+import '../navigation_requests.dart';
 import '../../features/appointments/appointment_form_sheet.dart';
 import '../../features/home/widgets/quick_log_form_sheet.dart';
 import '../../features/pets/forms/health_record_form_sheet.dart';
@@ -54,6 +55,7 @@ Future<void> _bookVisit(BuildContext context, AppServices services) async {
   if (saved != true || !context.mounted) {
     return;
   }
+  NavigationRequests.bumpHousehold();
   _showMessage(context, 'Appointment booked.');
   GoRouter.of(context).go(Routes.appointments);
 }
@@ -78,6 +80,7 @@ Future<void> _logEntry(BuildContext context, AppServices services) async {
   if (entry == null || !context.mounted) {
     return;
   }
+  NavigationRequests.bumpHousehold();
   _showMessage(context, '${entry.kind.label} logged.');
   GoRouter.of(context).go(Routes.journal);
 }
@@ -103,6 +106,7 @@ Future<void> _addHealthRecord(
   if (saved != true || !context.mounted) {
     return;
   }
+  NavigationRequests.bumpHousehold();
   _showMessage(context, 'Health record saved for ${pet.name}.');
 }
 

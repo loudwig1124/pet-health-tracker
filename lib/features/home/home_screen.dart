@@ -88,6 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _controller?.dispose();
       final HomeController controller = HomeController(services);
       _controller = controller;
+        NavigationRequests.householdRevision.addListener(_onHouseholdWrite);
       _branchActive = active;
       if (active) {
         controller.load();
@@ -100,8 +101,18 @@ class _HomeScreenState extends State<HomeScreen> {
     _branchActive = active;
   }
 
+  /// Another screen wrote something: refresh, but only while this branch is
+  /// the visible one — an inactive branch reloads when it becomes active.
+  void _onHouseholdWrite() {
+    if (!mounted || !TickerMode.valuesOf(context).enabled) {
+      return;
+    }
+    _controller?.load();
+  }
+
   @override
   void dispose() {
+    NavigationRequests.householdRevision.removeListener(_onHouseholdWrite);
     _pageController.dispose();
     _controller?.dispose();
     super.dispose();
