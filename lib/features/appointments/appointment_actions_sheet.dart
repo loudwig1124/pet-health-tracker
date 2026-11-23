@@ -263,7 +263,8 @@ class _AppointmentActionsSheetState extends State<AppointmentActionsSheet> {
                   Icons.chevron_right,
                   color: AppColors.secondary,
                 ),
-                showDivider: !widget.showViewInSection,
+                // Keep the hairline: the hand-off row below is a different
+                // kind of action, not a fifth status change.
                 onTap: _isBusy ? null : _reschedule,
               ),
               if (widget.showViewInSection)
