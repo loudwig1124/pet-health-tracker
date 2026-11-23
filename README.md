@@ -10,7 +10,7 @@ database on the device is the only source of truth.
 | **Home** | Greeting and owner avatar (tap → Profile), swipeable pet cards — one due-status chip each, naming the vaccine — tap-to-log chips for Walk / Fed / Meds / Note, every appointment on the most urgent day, and the three latest journal entries. |
 | **Journal** | The household feed, newest first, grouped Today / Yesterday / full date, with a per-pet filter. Tap a row to edit its time, note and duration, or delete it. |
 | **Appointments** | Upcoming / Past toggle with a per-pet filter. Tap a visit to complete it, cancel it with a reason, mark a no-show (only after the scheduled time), reschedule it, or jump to that pet's filtered list. |
-| **Profile** | Owner details (editable), the pet list, and three settings: due-soon window, weight unit and the sample-data toggle. |
+| **Profile** | Owner details (editable), the pet list, and four settings rows: due-soon window, weight unit, the sample-data toggle and Reset household. |
 | **Pet page** | A full-page photo (or drawn portrait) with a two-stop sheet: resting shows the name, worst due status and the vaccine that needs attention; raised reveals every vaccine and the append-only medical history. Reached by tapping a Home pet card or a Profile pet row. |
 | **Welcome** | First-run onboarding for an empty household: your name, your first pet, or one tap to start with the sample household. |
 
@@ -105,8 +105,11 @@ catalog.
 - **With the sample data on** — from the Welcome card or `Profile → Sample data` —
   the app seeds the demo household and Home opens with something to look at.
 
-The demo household lives at ids `>= 9000`, so `Profile → Sample data` can remove
-and restore it without touching anything the owner typed.
+The demo household is a fixed list of row ids (see `demoPetIds` and friends in
+`lib/data/seed/sample_data_service.dart`), so `Profile → Sample data` can remove
+and restore it without touching anything the owner typed. It is deliberately not
+an id *range*: these tables are `AUTOINCREMENT`, so the owner's own rows land
+above 9000 after seeding.
 
 ## Demo household
 
@@ -137,7 +140,9 @@ The widget tests boot the real app — router, shell, real screens — against a
 SQLite database through `sqflite_common_ffi`, applying the shipped
 `db/schema.sql`. Coverage: the navigation shell, quick logging and its undo
 timeout, the journal filter, the pet page and its sheets, appointment transitions
-and same-day collisions, profile settings, onboarding, and the demo seed.
+and same-day collisions, the demo-id ownership rule, vaccination superseding, the
+local calendar day, profile settings, and the demo seed. Forms and sheets that
+open a modal are exercised by hand — the widget harness cannot settle them.
 
 Screenshots of the running app can be regenerated without a device:
 

@@ -191,10 +191,17 @@ per-feature `ChangeNotifier`s; dispose them with the screen.
 
 `AppDatabase.openDefault()` creates the database from `db/schema.sql`;
 `AppServices.bootstrap()` then ensures the single `owner` row, seeds the vaccine
-catalog (always) and the demo household (when the persisted toggle is on, default
-yes). Demo rows live at ids `>= 9000` under the household owner, so they can be
-removed without touching the owner's own rows. `services.setSampleDataEnabled`
-is the only correct toggle path.
+catalog (always) and the demo household (only when the persisted toggle is on;
+it is off by default, so a fresh install opens on the Welcome card).
+
+Demo rows are a **fixed list of ids** — `demoPetIds`, `demoVaccinationIds`,
+`demoHealthRecordIds`, `demoAppointmentIds`, `demoJournalEntryIds` in
+`lib/data/seed/sample_data_service.dart`. Never an id *range*: the tables are
+`AUTOINCREMENT`, so after seeding 9001/9002 the owner's next pet gets 9003 and a
+range-shaped delete would destroy it (that was a real data-loss bug).
+`demoHouseholdExists` must use the same lists, and `clearDemoHousehold` deletes
+exactly those rows. `services.setSampleDataEnabled` is the only correct toggle
+path.
 
 ## UI kit and theme (`lib/ui/`)
 

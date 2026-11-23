@@ -10,8 +10,8 @@ performed. Target: **4:45**, leaving buffer inside the five-minute limit.
    `FV_REAL_HOME=1 ./tool/fv run -d Ludwig`.
 2. Make sure the demo data is on: **Profile → Sample data** off, then on (a
    fresh install starts with it off and shows the Welcome card instead). That
-   deletes and reseeds only the rows at ids 9000+, so anything you added by hand
-   survives.
+   deletes and reseeds only the demo's own rows (an exact list of ids), so
+   anything you added by hand survives.
 3. Keep the phone in portrait and the volume off. The screens are designed for a
    390 × 844 surface.
 4. Know your exits: if a screen looks stale, pull down to refresh; if the data is
@@ -93,9 +93,10 @@ toggle at the end is the reset.
 ## 2:45 — Complete it (30 s)
 
 1. Tap the new **City Vet** card.
-2. The actions sheet offers **Mark completed**, **Cancel**, **Reschedule**, and
-   **View in Appointments**; **Mark no-show** is greyed out (“Available after the
-   appointment time”) because the visit is in the future.
+2. The actions sheet offers **Mark completed**, **Cancel**, **Reschedule** and
+   **Mark no-show** (greyed out — “Available after the appointment time”, because
+   the visit is in the future). *View in Appointments* appears only when the sheet
+   is opened from Home's appointment card.
 3. **Mark completed** → the visit leaves Upcoming.
 4. Tap **Past**: the completed visit is listed with a **Completed** chip; open it
    and show the read-only summary.
@@ -114,16 +115,17 @@ toggle at the end is the reset.
 
 ## 3:40 — Profile (65 s)
 
-1. Tap **Profile**. Point out the owner block, **MY PETS**, the three **SETTINGS**
-   rows and the version line with live counts.
+1. Tap **Profile**. Point out the owner block, **MY PETS**, the four **SETTINGS**
+   rows (the last one, **Reset household**, is destructive and asks first) and the
+   version line with live counts.
 2. **Edit** the owner: name `Maria Santos`, save. The avatar becomes `M` and
    Home’s greeting uses the first name.
 3. **Add a pet** — `Coco`, dog, female, ≈2 years old, 8.5 kg. MY PETS and the
    counts update.
 4. Toggle **Sample data** off: Bella, Miso and their demo rows disappear, Coco
    stays. Toggle it on: the demo household returns.
-   - Narration: “Demo rows live at ids 9000+ behind a persisted toggle; clearing
-     them can never touch the owner’s own rows.”
+   - Narration: “The demo rows are an exact set of ids behind a persisted
+     toggle; clearing them can never touch the owner’s own rows.”
 
 ## 4:45 — Close
 
