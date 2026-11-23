@@ -54,3 +54,6 @@ app.*.map.json
 
 # Screenshot harness output
 /test/shots/*.png
+
+# Recorded promo footage lives outside this repository (../pet-tracker-promo)
+/promo/
