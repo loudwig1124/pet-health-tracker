@@ -31,11 +31,21 @@ void main() {
     WidgetTester tester,
     AppServices services, {
     Widget screen = const HomeScreen(),
+    TextScaler textScaler = TextScaler.noScaling,
   }) async {
     await tester.pumpWidget(
       AppScope(
         services: services,
-        child: MaterialApp(theme: AppTheme.light(), home: screen),
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          builder: (BuildContext context, Widget? child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: textScaler),
+            child: child ?? const SizedBox.shrink(),
+          ),
+          home: screen,
+        ),
       ),
     );
     // The dashboard load is real database work; let it finish before pumping.
@@ -183,6 +193,25 @@ void main() {
       // Material persists snackbars that carry an action unless told not to.
       await expireSnackBar(tester);
       expect(find.text('Walk logged'), findsNothing);
+    });
+
+
+    testWidgets('the pet card survives accessibility text sizes', (
+      WidgetTester tester,
+    ) async {
+      usePhoneSurface(tester);
+      await pumpHome(
+        tester,
+        harness.services,
+        textScaler: const TextScaler.linear(1.5),
+      );
+
+      // An overflow would surface here as an exception.
+      expect(tester.takeException(), isNull);
+      expect(
+        find.byKey(const ValueKey<String>('pet-card-9001')),
+        findsOneWidget,
+      );
     });
 
     testWidgets(

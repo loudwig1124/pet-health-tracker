@@ -43,6 +43,11 @@ import 'widgets/quick_log_row.dart';
 /// cards peek in the remaining 80 px (40 each side).
 const double kPetCardHeight = 264;
 
+/// The card grows with the reader's text size: a fixed 264 clipped the meta
+/// line and the last-visit row at 1.5x and above.
+double petCardHeight(double textScale) =>
+    kPetCardHeight * (1 + (textScale - 1).clamp(0, 0.5) * 0.8);
+
 /// Cards are 310 wide with a 12 px gap; the page includes the gap so the
 /// neighbour peeks in without touching the front card.
 const double kPetCardGap = 12;
@@ -410,7 +415,7 @@ class _HomeScreenState extends State<HomeScreen> {
         )
       else ...<Widget>[
         SizedBox(
-          height: kPetCardHeight,
+          height: petCardHeight(MediaQuery.textScalerOf(context).scale(1)),
           child: PageView.builder(
             controller: _pageController,
             itemCount: pets.length + 1,

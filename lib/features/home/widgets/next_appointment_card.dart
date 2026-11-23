@@ -76,9 +76,11 @@ class _DateBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The date block holds two stacked labels, so it has to grow with them.
+    final double scale = MediaQuery.textScalerOf(context).scale(1).clamp(1, 1.4);
     return Container(
-      width: 52,
-      height: 52,
+      width: 52 * scale,
+      height: 52 * scale,
       decoration: BoxDecoration(
         color: statusBackground(AppColors.accent, AppColors.surface),
         borderRadius: AppRadii.chipRadius,

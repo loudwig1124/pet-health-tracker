@@ -22,7 +22,10 @@ class PhoneFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.sizeOf(context);
-    if (size.width <= 560) {
+    // Only a window that is larger than a phone on both axes needs framing;
+    // a rotated phone (844 x 390) must fill the screen instead of being
+    // letterboxed into a 390-wide card 354 tall.
+    if (size.width <= 560 || size.height <= 560) {
       return child;
     }
     final double height = math.min(size.height - 48, kPhoneFrameHeight);

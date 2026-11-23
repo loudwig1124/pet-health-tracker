@@ -30,8 +30,12 @@ class PrimaryButton extends StatelessWidget {
           );
     return SizedBox(
       width: expand ? double.infinity : null,
-      height: 52,
-      child: button,
+      child: ConstrainedBox(
+        // A fixed 52 clipped the label at iOS accessibility text sizes; a
+        // minimum keeps the rhythm and lets the button grow.
+        constraints: const BoxConstraints(minHeight: 52),
+        child: button,
+      ),
     );
   }
 }

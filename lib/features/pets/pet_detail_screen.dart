@@ -8,6 +8,8 @@ library;
 
 import 'dart:ui' as ui;
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../app/app_scope.dart';
@@ -29,6 +31,23 @@ import 'pet_detail_controller.dart';
 import 'pet_photo.dart';
 
 /// Resting stop: sheet top edge, from the approved style tile (390 x 844).
+/// Resting and raised tops for a given viewport height.
+///
+/// The fractions are the original 560/168 at the 844 pt design height, so the
+/// designed screen is unchanged while shorter surfaces keep a usable sheet.
+const double _restingFraction = 560 / 844;
+const double _raisedFraction = 168 / 844;
+
+double restingSheetTop(double viewportHeight) => math.max(
+  viewportHeight - 300,
+  viewportHeight * _restingFraction,
+);
+
+double raisedSheetTop(double viewportHeight) => math.min(
+  math.max(viewportHeight * _raisedFraction, 96),
+  restingSheetTop(viewportHeight) - 180,
+);
+
 const double kPetSheetRestingTop = 560;
 
 /// Raised stop: sheet top edge when vaccines and medical history are revealed.
@@ -241,7 +260,12 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
         ),
         _topBar(pet: pet),
         AnimatedPositioned(
-          top: _raised ? kPetSheetRaisedTop : kPetSheetRestingTop,
+          // Stops are fractions of the viewport with a floor, so a small
+          // screen (or a short web frame) still shows a usable sheet instead of
+          // collapsing it to zero height.
+          top: _raised
+              ? raisedSheetTop(MediaQuery.sizeOf(context).height)
+              : restingSheetTop(MediaQuery.sizeOf(context).height),
           left: 0,
           right: 0,
           bottom: 0,

@@ -82,7 +82,9 @@ class ListRow extends StatelessWidget {
               ),
               if (trailing != null) ...<Widget>[
                 const SizedBox(width: AppSpacing.sm),
-                trailing!,
+                // A wide trailing label (a date, a count) must give way to the
+                // title rather than overflow the row at large text sizes.
+                Flexible(child: trailing!),
               ],
             ],
           ),
