@@ -2,16 +2,24 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_health_tracker/domain/models/vaccination.dart';
 import 'package:pet_health_tracker/domain/rules/vaccination_due.dart';
 
+/// Each call is a distinct vaccine unless the test says otherwise, because the
+/// rule now keeps only the newest dose per vaccine.
+int _sequence = 0;
+
 Vaccination vaccination({
   required DateTime? nextDueDate,
   String name = 'Rabies',
+  int? id,
+  int? typeId,
+  DateTime? given,
 }) {
+  _sequence += 1;
   return Vaccination(
-    id: 1,
+    id: id ?? _sequence,
     petId: 1,
-    vaccineTypeId: 1,
+    vaccineTypeId: typeId ?? _sequence,
     vaccineName: name,
-    vaccinationDate: DateTime.utc(2025, 1, 1),
+    vaccinationDate: given ?? DateTime.utc(2025, 1, 1),
     nextDueDate: nextDueDate,
     createdAt: DateTime.utc(2025, 1, 1),
   );
@@ -125,6 +133,99 @@ void main() {
         petVaccinationDueStatus(doses, today),
         VaccinationDueStatus.dueSoon,
       );
+    });
+  });
+
+
+  group('a newer dose supersedes an older one of the same vaccine', () {
+    test('an old overdue dose stops counting once it is re-vaccinated', () {
+      final List<Vaccination> doses = <Vaccination>[
+        vaccination(
+          id: 1,
+          typeId: 7,
+          given: DateTime.utc(2025, 1, 1),
+          nextDueDate: DateTime.utc(2026, 1, 1),
+        ),
+        vaccination(
+          id: 2,
+          typeId: 7,
+          given: DateTime.utc(2026, 11, 20),
+          nextDueDate: DateTime.utc(2027, 11, 20),
+        ),
+      ];
+      expect(
+        petVaccinationDueStatus(doses, today),
+        VaccinationDueStatus.upToDate,
+      );
+    });
+
+    test('the newest dose with no due date clears that vaccine', () {
+      final List<Vaccination> doses = <Vaccination>[
+        vaccination(
+          id: 1,
+          typeId: 7,
+          given: DateTime.utc(2025, 1, 1),
+          nextDueDate: DateTime.utc(2026, 1, 1),
+        ),
+        vaccination(
+          id: 2,
+          typeId: 7,
+          given: DateTime.utc(2026, 11, 20),
+          nextDueDate: null,
+        ),
+      ];
+      expect(
+        petVaccinationDueStatus(doses, today),
+        VaccinationDueStatus.upToDate,
+      );
+    });
+
+    test('superseding is per vaccine, so another type can still be overdue', () {
+      final List<Vaccination> doses = <Vaccination>[
+        vaccination(
+          id: 1,
+          typeId: 7,
+          name: 'Rabies',
+          given: DateTime.utc(2025, 1, 1),
+          nextDueDate: DateTime.utc(2026, 1, 1),
+        ),
+        vaccination(
+          id: 2,
+          typeId: 7,
+          name: 'Rabies',
+          given: DateTime.utc(2026, 11, 20),
+          nextDueDate: DateTime.utc(2027, 11, 20),
+        ),
+        vaccination(
+          id: 3,
+          typeId: 8,
+          name: 'DHPP',
+          given: DateTime.utc(2025, 3, 1),
+          nextDueDate: DateTime.utc(2026, 3, 1),
+        ),
+      ];
+      expect(
+        petVaccinationDueStatus(doses, today),
+        VaccinationDueStatus.overdue,
+      );
+    });
+
+    test('the label names the current dose, not the superseded one', () {
+      final List<Vaccination> doses = <Vaccination>[
+        vaccination(
+          id: 1,
+          typeId: 7,
+          given: DateTime.utc(2025, 1, 1),
+          nextDueDate: DateTime.utc(2026, 1, 1),
+        ),
+        vaccination(
+          id: 2,
+          typeId: 7,
+          given: DateTime.utc(2026, 11, 20),
+          nextDueDate: DateTime.utc(2027, 11, 20),
+        ),
+      ];
+      expect(nextDueVaccination(doses)!.id, 2);
     });
   });
 

@@ -53,15 +53,47 @@ VaccinationDueStatus vaccinationDueStatus(
   return VaccinationDueStatus.upToDate;
 }
 
-/// The most urgent status across a pet's tracked due dates. A pet with no
-/// tracked due dates reads up to date (nothing is due).
+/// The doses that still describe a pet's status: the most recent one for each
+/// vaccine, by the date it was given (ids break same-day ties).
+///
+/// Vaccinations are append-only, so a pet accumulates history. Ranking every
+/// row would let an old, overdue dose outrank the booster that superseded it —
+/// a re-vaccinated pet could never clear "overdue".
+Iterable<Vaccination> currentDoses(Iterable<Vaccination> vaccinations) {
+  final Map<String, Vaccination> latest = <String, Vaccination>{};
+  for (final Vaccination vaccination in vaccinations) {
+    // A type id is the reliable key; the snapshotted name is the fallback for
+    // historical rows that predate the catalog.
+    final String key = vaccination.vaccineTypeId != null
+        ? 'type:${vaccination.vaccineTypeId}'
+        : 'name:${vaccination.vaccineName.trim().toLowerCase()}';
+    final Vaccination? current = latest[key];
+    if (current == null || _isNewer(vaccination, current)) {
+      latest[key] = vaccination;
+    }
+  }
+  return latest.values;
+}
+
+bool _isNewer(Vaccination candidate, Vaccination incumbent) {
+  final int byDate = candidate.vaccinationDate.compareTo(
+    incumbent.vaccinationDate,
+  );
+  if (byDate != 0) {
+    return byDate > 0;
+  }
+  return candidate.id > incumbent.id;
+}
+
+/// The most urgent status across a pet's current doses. A pet with no tracked
+/// due dates reads up to date (nothing is due).
 VaccinationDueStatus petVaccinationDueStatus(
   Iterable<Vaccination> vaccinations,
   DateTime today, {
   int windowDays = defaultDueSoonWindowDays,
 }) {
   VaccinationDueStatus worst = VaccinationDueStatus.upToDate;
-  for (final Vaccination vaccination in vaccinations) {
+  for (final Vaccination vaccination in currentDoses(vaccinations)) {
     final VaccinationDueStatus status = vaccinationDueStatus(
       vaccination.nextDueDate,
       today,
@@ -74,11 +106,11 @@ VaccinationDueStatus petVaccinationDueStatus(
   return worst;
 }
 
-/// The vaccination with the earliest next due date (overdue first), or null
-/// when no dose has a due date.
+/// The current dose with the earliest next due date (overdue first), or null
+/// when no current dose has a due date.
 Vaccination? nextDueVaccination(Iterable<Vaccination> vaccinations) {
   Vaccination? next;
-  for (final Vaccination vaccination in vaccinations) {
+  for (final Vaccination vaccination in currentDoses(vaccinations)) {
     final DateTime? due = vaccination.nextDueDate;
     if (due == null) {
       continue;
