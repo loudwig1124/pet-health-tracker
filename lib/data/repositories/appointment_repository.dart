@@ -23,6 +23,9 @@ abstract class AppointmentRepository {
 
   Future<Appointment> create(AppointmentDraft draft);
 
+  /// Removes every visit — used when the household is reset.
+  Future<void> deleteAll();
+
   /// Applies one legal transition; blocked transitions throw
   /// `AppointmentRuleException` (see `lib/domain/rules/appointment_rules.dart`).
   Future<Appointment> updateStatus(

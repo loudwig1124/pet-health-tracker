@@ -6,6 +6,8 @@
 /// [AppServices] instance.
 library;
 
+import '../domain/models/pet.dart';
+import '../data/pet_photos.dart';
 import '../data/repositories/appointment_repository.dart';
 import '../data/repositories/dashboard_repository.dart';
 import '../data/repositories/health_record_repository.dart';
@@ -105,6 +107,18 @@ class AppServices {
   /// Home's read model, using the persisted due-soon window.
   Future<Dashboard> loadDashboard() =>
       dashboard.load(now: now(), dueSoonWindowDays: settings.dueSoonWindowDays);
+
+  /// Empties the household: every visit, then every pet (which cascades to its
+  /// journal, vaccinations and clinical notes), and turns the sample data off so
+  /// the app lands on the Welcome card. The owner row survives.
+  Future<void> resetHousehold() async {
+    await appointments.deleteAll();
+    for (final Pet pet in await pets.list()) {
+      await PetPhotos().deleteOwned(pet.photoPath);
+      await pets.delete(pet.id);
+    }
+    await setSampleDataEnabled(false);
+  }
 
   Future<void> dispose() async {
     settings.dispose();

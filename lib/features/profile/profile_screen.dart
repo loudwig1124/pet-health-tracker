@@ -228,6 +228,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onChanged: _setSampleData,
               ),
             ),
+            ListRow(
+              key: const ValueKey<String>('setting-reset-household'),
+              title: 'Reset household',
+              subtitle: 'Deletes every pet, record and visit',
+              showDivider: false,
+              trailing: Text(
+                'Reset',
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.overdue,
+                ),
+              ),
+              onTap: _resetHousehold,
+            ),
           ],
         ),
         const SizedBox(height: AppSpacing.xl),
@@ -237,6 +250,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
           style: AppTextStyles.caption,
         ),
       ],
+    );
+  }
+
+  /// Destructive, so it asks first. After a reset the household is empty and
+  /// Home shows the Welcome card again.
+  Future<void> _resetHousehold() async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Reset household?'),
+        content: const Text(
+          'Every pet, journal entry, vaccination, clinical note and visit will '
+          'be deleted. Your name and settings stay.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            key: const ValueKey<String>('reset-household-confirm'),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(
+              'Delete everything',
+              style: TextStyle(color: AppColors.overdue),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) {
+      return;
+    }
+    await _controller.resetHousehold();
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Household reset.')),
     );
   }
 

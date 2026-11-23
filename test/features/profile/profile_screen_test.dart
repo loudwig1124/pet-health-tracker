@@ -75,12 +75,13 @@ void main() {
     );
     expect(
       find.descendant(of: settings, matching: find.byType(ListRow)),
-      findsNWidgets(3),
+      findsNWidgets(4),
     );
     for (final String key in <String>[
       'setting-due-window',
       'setting-weight-unit',
       'setting-sample-data',
+      'setting-reset-household',
     ]) {
       expect(
         find.descendant(

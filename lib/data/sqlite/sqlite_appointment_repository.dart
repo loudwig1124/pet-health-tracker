@@ -56,6 +56,11 @@ class SqliteAppointmentRepository implements AppointmentRepository {
   Future<Appointment?> findById(int id) => _find(_db, id);
 
   @override
+  Future<void> deleteAll() async {
+    await _db.delete('appointment');
+  }
+
+  @override
   Future<Appointment> create(AppointmentDraft draft) async {
     final DateTime now = _clock().toUtc();
     final Appointment appointment = Appointment(
