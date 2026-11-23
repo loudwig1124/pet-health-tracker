@@ -13,6 +13,7 @@ import '../../domain/species.dart';
 import '../../ui/kit/app_card.dart';
 import '../../ui/kit/primary_button.dart';
 import '../../ui/theme/app_theme.dart';
+import '../pets/forms/form_fields.dart';
 
 class FirstRunCard extends StatefulWidget {
   const FirstRunCard({
@@ -162,33 +163,13 @@ class _FirstRunCardState extends State<FirstRunCard> {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: Text(
-                  'Birthday · ${_birthday.day}/${_birthday.month}/'
-                  '${_birthday.year}',
-                  style: AppTextStyles.caption,
-                ),
-              ),
-              TextButton(
-                key: const ValueKey<String>('first-run-birthday'),
-                onPressed: _saving
-                    ? null
-                    : () async {
-                        final DateTime? picked = await showDatePicker(
-                          context: context,
-                          initialDate: _birthday,
-                          firstDate: DateTime(2000),
-                          lastDate: widget.services.today(),
-                        );
-                        if (picked != null) {
-                          setState(() => _birthday = picked);
-                        }
-                      },
-                child: const Text('Change'),
-              ),
-            ],
+          FormDateField(
+            key: const ValueKey<String>('first-run-birthday'),
+            label: 'Date of birth · approximate is fine',
+            value: _birthday,
+            firstDate: DateTime(2000),
+            lastDate: widget.services.today(),
+            onChanged: (DateTime picked) => setState(() => _birthday = picked),
           ),
           if (_error != null) ...<Widget>[
             const SizedBox(height: AppSpacing.sm),

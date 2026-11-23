@@ -368,24 +368,27 @@ class _HomeScreenState extends State<HomeScreen> {
     final DateTime now = _controller!.localNow;
 
     return <Widget>[
-      Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl,
-          AppSpacing.sm,
-          AppSpacing.xl,
-          AppSpacing.lg,
+      // "Good afternoon" is a greeting for a household that exists. With no pets
+      // there is nothing to greet yet — the Welcome card speaks for itself.
+      if (pets.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.sm,
+            AppSpacing.xl,
+            AppSpacing.lg,
+          ),
+          child: _GreetingRow(
+            owner: dashboard.owner,
+            now: now,
+            onOpenProfile: _openProfile,
+          ),
         ),
-        child: _GreetingRow(
-          owner: dashboard.owner,
-          now: now,
-          onOpenProfile: _openProfile,
-        ),
-      ),
       if (pets.isEmpty)
         Padding(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.xl,
-            AppSpacing.lg,
+            AppSpacing.xl,
             AppSpacing.xl,
             0,
           ),
