@@ -49,7 +49,8 @@ class ListRow extends StatelessWidget {
             horizontalInset,
             AppSpacing.md,
           ),
-          child: Row(
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) => Row(
             children: <Widget>[
               if (leading != null) ...<Widget>[
                 leading!,
@@ -82,11 +83,19 @@ class ListRow extends StatelessWidget {
               ),
               if (trailing != null) ...<Widget>[
                 const SizedBox(width: AppSpacing.sm),
-                // A wide trailing label (a date, a count) must give way to the
-                // title rather than overflow the row at large text sizes.
-                Flexible(child: trailing!),
+                // Tight, not flexible: a flexible trailing box floated the
+                // value into the middle of the row. The cap keeps a long label
+                // (a date, a count) from overflowing at large text sizes while
+                // it stays right-aligned.
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: constraints.maxWidth * 0.42,
+                  ),
+                  child: trailing!,
+                ),
               ],
             ],
+            ),
           ),
         ),
       ),
