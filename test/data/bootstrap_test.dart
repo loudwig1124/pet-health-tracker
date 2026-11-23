@@ -51,18 +51,25 @@ void main() {
 
     expect(File(databasePath).existsSync(), isTrue);
     expect(await services.vaccineTypes.list(), hasLength(7));
+    // A fresh install starts empty: the Welcome card offers the sample data.
+    expect(await services.pets.list(), isEmpty);
+    expect(await services.sampleData.hasDemoData(), isFalse);
+    expect(await services.owners.load(), isNotNull);
+
+    await services.setSampleDataEnabled(true);
     expect((await services.pets.list()).map((Pet pet) => pet.name), <String>[
       'Bella',
       'Miso',
     ]);
-    expect((await services.owners.load()).name, 'Maria Santos');
     expect(await services.sampleData.hasDemoData(), isTrue);
   });
 
   test('reopening the same file does not duplicate the seed', () async {
     final AppDatabase first = await openFileDatabase(databasePath);
     final AppSettings settings = AppSettings(
-      settingsStore: MemorySettingsStore(),
+      settingsStore: MemorySettingsStore(<String, Object?>{
+        'sampleDataEnabled': true,
+      }),
     );
     await settings.load();
     final services = await openAppServices(
@@ -74,7 +81,9 @@ void main() {
 
     final AppDatabase second = await openFileDatabase(databasePath);
     final AppSettings secondSettings = AppSettings(
-      settingsStore: MemorySettingsStore(),
+      settingsStore: MemorySettingsStore(<String, Object?>{
+        'sampleDataEnabled': true,
+      }),
     );
     await secondSettings.load();
     final reopened = await openAppServices(
@@ -116,7 +125,7 @@ void main() {
 
     final AppSettings settings = AppSettings(settingsStore: store);
     await settings.load();
-    expect(settings.sampleDataEnabled, isTrue);
+    expect(settings.sampleDataEnabled, isFalse);
     expect(settings.dueSoonWindowDays, 30);
     expect(settings.weightUnit, WeightUnit.kg);
 
@@ -136,7 +145,8 @@ void main() {
     expect(await store.read(), isEmpty);
     final AppSettings fallback = AppSettings(settingsStore: store);
     await fallback.load();
-    expect(fallback.sampleDataEnabled, isTrue);
+    // No readable settings means a fresh household: onboarding, not demo data.
+    expect(fallback.sampleDataEnabled, isFalse);
   });
 
   test(
@@ -149,8 +159,10 @@ void main() {
       );
       addTearDown(services.dispose);
 
-      expect(await services.pets.list(), hasLength(2));
+      expect(await services.pets.list(), isEmpty);
 
+      await services.setSampleDataEnabled(true);
+      expect(await services.pets.list(), hasLength(2));
       await services.setSampleDataEnabled(false);
       final File settingsFile = File('${directory.path}/settings.json');
       expect(settingsFile.existsSync(), isTrue);
