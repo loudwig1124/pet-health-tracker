@@ -5,17 +5,20 @@ performed. Target: **4:45**, leaving buffer inside the five-minute limit.
 
 ## Before the demo
 
-1. Launch from this `Pet Health Tracker/` directory:
-   `./tool/fv run -d "iPhone 17 Pro"` (or the device id from `./tool/fv devices`).
-2. Wait for Home to finish loading. The first launch seeds the demo household;
-   if the app has been used before, reset it:
-   - For a clean demo household: **Profile → Sample data** off, then on.
-   - For a completely clean run (including owner and pets you added):
-     delete the app from the simulator/device and relaunch.
-3. Keep the phone in portrait. The screens are designed for a 390 × 844 surface.
+1. Confirm the app still opens. On iOS it is signed with a free Apple ID, which
+   expires **seven days** after install — if in doubt, rebuild:
+   `FV_REAL_HOME=1 ./tool/fv run -d Ludwig`.
+2. Make sure the demo data is on: **Profile → Sample data** off, then on (a
+   fresh install starts with it off and shows the Welcome card instead). That
+   deletes and reseeds only the rows at ids 9000+, so anything you added by hand
+   survives.
+3. Keep the phone in portrait and the volume off. The screens are designed for a
+   390 × 844 surface.
+4. Know your exits: if a screen looks stale, pull down to refresh; if the data is
+   too edited, toggle Sample data off and on.
 
-Rehearse once in this exact order; the categories you touch are additive (each
-logged item adds a record), and the sample-data toggle at the end is the reset.
+Rehearse once in this exact order. Every logged item adds a record, so the
+toggle at the end is the reset.
 
 ## Timeline
 
@@ -23,130 +26,116 @@ logged item adds a record), and the sample-data toggle at the end is the reset.
 | --- | --- | --- |
 | 0:00 | Home | The household at a glance |
 | 0:35 | Pet page | One photo, two sheet stops, a booster added |
-| 1:40 | Quick log | One tap logs a walk; undo is offered |
+| 1:40 | Quick log | One tap logs a walk; undo is offered, then expires |
 | 2:00 | Book a visit | The centre `+` action books a real appointment |
-| 2:45 | Complete it | The appointment state machine, Upcoming → Past |
-| 3:15 | Journal | Editable household feed, grouped by day |
+| 2:45 | Complete it | The state machine, Upcoming → Past |
+| 3:15 | Journal | Editable feed, grouped by day, filtered per pet |
 | 3:40 | Profile | Owner, pets, settings, sample data |
 | 4:45 | Close | Back to Home |
 
 ## 0:00 — Home (35 s)
 
-1. Launch the app. It opens on **Home**.
-2. Point out the greeting (`Good morning, My household` — the greeting follows
-   the clock) and the `M` avatar. The household is renamed later in the demo.
-3. Tap the second pager dot to show **Miso**. Swipe back to **Bella**.
-   - Bella: dog, ≈5 yr, 12.4 kg, **Overdue** chip (rabies booster 35 days late).
-   - Miso: cat, ≈3 yr, 4.2 kg, **Due soon** chip (FeLV in 10 days).
-   - Narration: “This is the whole point of the home screen — one card per pet,
-     and exactly one status chip derived from the vaccination rule.”
-4. Point at the **LOG SOMETHING** chips (Walk, Fed, Meds, Note), the next-visit
-   card (`Paws & Claws Veterinary Clinic — Bella · Annual wellness check`), and
-   **Recent** (today’s feeding, yesterday’s walk).
+1. Launch. It opens on **Home**.
+2. Point out the greeting (`Good afternoon, Maria` — the greeting follows the
+   clock, and only the first name is shown) and the `M` avatar. **Tap the avatar** to show it opens Profile with the same fade the tab bar uses, then come back.
+3. Tap the second pager dot to show **Miso**, then swipe back to **Bella**.
+   - Bella: dog, ≈5 yr, 12.4 kg, **“Rabies · 35 days overdue”** — the chip names
+     the vaccine, not just the state.
+   - Miso: cat, ≈3 yr, 4.2 kg, **“FeLV · due in 10 days”**.
+   - Narration: “One card per pet, one status chip, derived from the vaccination
+     rule — nothing about ‘overdue’ is stored.”
+4. Point at **LOG SOMETHING** (Walk, Fed, Meds, Note), the **next-visit card**
+   (`Paws & Claws Veterinary Clinic · Bella · Annual wellness check`), and
+   **Recent** (three entries).
 5. Narration: “Offline, single household, SQLite. No accounts, no network.”
 
 ## 0:35 — Pet page and booster (65 s)
 
-1. Tap **Bella’s card**.
-   - The photo (paper portrait until a real photo is set) covers the whole
-     screen. The sheet rests at the bottom with the name, meta line, **Overdue**
-     chip, **VACCINES** and one row: Rabies, overdue.
-2. Tap the sheet handle (or drag the sheet up).
-   - The same photo stays in place and blurs; the sheet rises to reveal both
-     vaccines and the **MEDICAL HISTORY** section (ear infection, 25 days ago).
-   - Narration: “The photo is painted once and never moves or resizes; only the
-     sheet and its blur travel. Clinical notes are append-only.”
+1. Tap **Bella’s card** — it slides in from the right; the tab bar is covered by
+   the photo.
+   - The photo (drawn portrait until a real one is set) fills the screen; the
+     sheet rests at the bottom with the name, meta line, **Overdue** chip,
+     **VACCINES** and one row: Rabies, overdue.
+2. Drag the sheet up (or tap the handle).
+   - The photo stays exactly where it is and blurs; the sheet rises to reveal all
+     vaccines and **MEDICAL HISTORY** (otitis externa, Dr. Cruz).
+   - Narration: “The photo is painted once and never resizes — only the sheet and
+     its blur travel. Clinical notes are append-only; the UI offers no edit.”
 3. Tap **+ Add** next to VACCINES.
-   - The vaccination form opens with Rabies selected, today’s date and the next
-     due date prefilled from the catalog interval (+12 months).
-   - Optionally type `Dr. Ana Cruz` in Vet, then tap **Save vaccination**.
-4. Back on the raised sheet, the chip is now **Up to date** — the new booster
-   outranks the overdue dose.
-5. Tap the back arrow. Home reloads and Bella’s card also reads **Up to date**.
-   - Narration: “Hospital and household see the same database; the due status is
-     one pure rule, not a copy per screen.”
+   - The form opens with the vaccine type selected, today’s date, and the next
+     due date prefilled from the catalog interval.
+   - Type `Dr. Ana Cruz` in Vet and **Save**.
+4. Back on the raised sheet, the chip reads **Up to date** — the new dose
+   outranks the overdue one because the rule reads the latest vaccination.
+5. Tap back. Home reloads and Bella’s card also reads up to date.
+   - Narration: “The due status is one pure rule, not a copy per screen.”
 
 ## 1:40 — Log a walk (20 s)
 
 1. With Bella’s card active, tap the **Walk** chip.
-2. A snackbar says `Walk logged` and offers **UNDO**; the **Recent** list updates
-   immediately with today’s walk.
-3. Narration: “One tap stores the kind and now; long-press opens the full form if
-   you want a note, duration or another time.”
+2. A snackbar says `Walk logged · UNDO` and **Recent** updates immediately.
+3. Leave the snackbar alone for five seconds and let it disappear.
+   - Narration: “One tap stores the kind and the moment — no invented duration.
+     Long-press opens the full form for a note or another time.”
 
 ## 2:00 — Book a visit (45 s)
 
-1. Tap the raised centre **+** button.
-2. The **QUICK ACTIONS** sheet shows the three real create flows: *Book a vet
-   visit*, *Log an entry*, *Add a health record*.
-3. Tap **Book a vet visit**.
-4. In the booking sheet:
-   - Pet: Bella (default).
-   - Clinic: `City Vet`.
-   - Purpose: `Booster follow-up`.
-   - Date: tomorrow (default); time: 9:30.
-   - Tap **Book visit**.
-5. The sheet closes with `Appointment booked.` and lands on **Appointments →
-   Upcoming**, with the new City Vet visit at the top.
+1. Tap the raised centre **+**.
+2. The quick-action sheet shows the three real create flows: *Book a vet visit*,
+   *Log an entry*, *Add a health record*.
+3. Tap **Book a vet visit**, then fill: Pet **Bella**, Clinic `City Vet`, Purpose
+   `Booster follow-up`, tomorrow at 9:30, **Book visit**.
+4. The sheet closes with a confirmation and the app lands on **Appointments →
+   Upcoming** with the City Vet visit at the top.
+   - Narration: “The centre button is the only create entry point — one place to
+     look for every kind of record.”
 
 ## 2:45 — Complete it (30 s)
 
 1. Tap the new **City Vet** card.
-2. The actions sheet offers **Mark completed**, **Cancel appointment**, and
-   **Reschedule**; **Mark no-show** is greyed out (“Available after the
+2. The actions sheet offers **Mark completed**, **Cancel**, **Reschedule**, and
+   **View in Appointments**; **Mark no-show** is greyed out (“Available after the
    appointment time”) because the visit is in the future.
-3. Tap **Mark completed** → `Appointment marked completed.` The visit leaves
-   Upcoming.
-4. Tap the **Past** segment: the completed City Vet visit is listed with a
-   **Completed** chip. Tap it to show the read-only summary: “Completed visits
-   cannot be changed.”
-5. Tap **Upcoming** again.
-   - Narration: “The state machine is enforced in the domain layer and again by
-     the repository — terminal visits stay terminal.”
+3. **Mark completed** → the visit leaves Upcoming.
+4. Tap **Past**: the completed visit is listed with a **Completed** chip; open it
+   and show the read-only summary.
+   - Narration: “Terminal states stay terminal — enforced in the domain layer and
+     again by the repository.”
 
 ## 3:15 — Journal (25 s)
 
-1. Tap the **Journal** tab.
+1. Tap **Journal**.
 2. Entries are newest first, grouped **TODAY** / **YESTERDAY** / full date, with
    the walk you just logged at the top.
-3. Tap the walk row. The edit sheet opens with time, note and duration.
-   Change the note to `Morning loop, sunny`, tap **Save changes** →
-   `Entry updated.`
-4. Narration: “Journal entries stay editable; clinical records do not leave the
-   pet page’s append-only history.”
+3. Tap the **Miso** filter chip at the top: only Miso’s rows remain. Tap **All
+   pets** to restore the household.
+   - Narration: “The same list, scoped by a filter — not a second screen.”
+4. Tap the walk row, change the note to `Morning loop, sunny`, **Save changes**.
 
 ## 3:40 — Profile (65 s)
 
-1. Tap the **Profile** tab. Point out the owner block, **MY PETS** (Bella, Miso),
-   the three **SETTINGS** rows and the version line
-   `Version 1.0.0 · 2 pets · 12 records` (counts have grown by the entries made
-   in this demo).
-2. Tap **Edit** on the owner. Set Name `Maria Santos`, Email
-   `maria@example.com`, tap **Save details**. The block updates and the avatar
-   becomes `M`.
-3. Tap **Add a pet** (the last MY PETS row). Add `Coco`, a dog: pick Sex
-   `Female`, choose a date of birth about two years ago, Weight `8.5`, tap
-   **Add pet**. MY PETS and the version line now include Coco.
-4. Toggle **Sample data** off: Bella, Miso and their demo records disappear,
-   Coco stays, and the version line drops. Toggle it on: the demo household
-   returns.
-   - Narration: “Demo rows live at ids 9000+ and are seeded behind a persisted
-     toggle; clearing them can never touch the owner’s own rows.”
-5. Optionally tap **Due-soon window → 60 days** to show the same due rule
-   reacting to the setting (Bella’s next-due dates re-read accordingly).
+1. Tap **Profile**. Point out the owner block, **MY PETS**, the three **SETTINGS**
+   rows and the version line with live counts.
+2. **Edit** the owner: name `Maria Santos`, save. The avatar becomes `M` and
+   Home’s greeting uses the first name.
+3. **Add a pet** — `Coco`, dog, female, ≈2 years old, 8.5 kg. MY PETS and the
+   counts update.
+4. Toggle **Sample data** off: Bella, Miso and their demo rows disappear, Coco
+   stays. Toggle it on: the demo household returns.
+   - Narration: “Demo rows live at ids 9000+ behind a persisted toggle; clearing
+     them can never touch the owner’s own rows.”
 
 ## 4:45 — Close
 
-1. Tap **Home**. The greeting now reads `Good … , Maria Santos`; the demo
-   household (plus Coco) is back.
-2. One sentence: “Tested with the real SQLite schema; analyze clean and the full
-   suite green.”
+1. Tap **Home**. The greeting reads `Good …, Maria`; the household is back.
+2. One sentence: “Tested against the real SQLite schema — analyze clean, 184
+   tests green, and the app never talks to a network.”
 
 ## If something goes wrong
 
-- **A list looks stale** — pull down to refresh (Home, Journal, Appointments).
+- **A list looks stale** — pull down to refresh; the tab that regains focus also
+  reloads by itself.
 - **Demo data was edited too much** — Profile → Sample data off, then on.
-- **Nothing loads** — quit and relaunch; the database and settings are seeded on
-  first launch, and the app never talks to a network.
-- **Accidental deletion** — Home quick logs offer **UNDO** for the entry just
-  saved; the demo household can always be reseeded with the sample-data toggle.
+- **Accidental quick log** — the snackbar offers **UNDO** for five seconds.
+- **Nothing loads** — quit and relaunch; the database, owner and vaccine catalog
+  are created on first launch.
