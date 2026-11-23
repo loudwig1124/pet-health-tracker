@@ -10,6 +10,7 @@ import '../../domain/rules/calendar.dart';
 import '../../ui/kit/app_sheet.dart';
 import '../../ui/kit/empty_state.dart';
 import '../../ui/kit/list_row.dart';
+import '../../ui/kit/primary_button.dart';
 import '../../ui/theme/app_theme.dart';
 import 'pet_photo.dart';
 
@@ -46,6 +47,7 @@ class PetChooserSheet extends StatefulWidget {
 
 class _PetChooserSheetState extends State<PetChooserSheet> {
   List<Pet> _pets = const <Pet>[];
+  String? _error;
   bool _loading = true;
 
   @override
@@ -55,6 +57,7 @@ class _PetChooserSheetState extends State<PetChooserSheet> {
   }
 
   Future<void> _load() async {
+    setState(() => _error = null);
     try {
       final List<Pet> pets = await widget.services.pets.list();
       if (!mounted) {
@@ -68,7 +71,11 @@ class _PetChooserSheetState extends State<PetChooserSheet> {
       if (!mounted) {
         return;
       }
-      setState(() => _loading = false);
+      // Say what happened: an empty list and a failed load look identical.
+      setState(() {
+        _loading = false;
+        _error = 'Could not load your pets.';
+      });
     }
   }
 
@@ -89,6 +96,14 @@ class _PetChooserSheetState extends State<PetChooserSheet> {
             const Padding(
               padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
               child: Text('Loading the pets…', style: AppTextStyles.caption),
+            )
+          else if (_error != null)
+            EmptyState(
+              key: const ValueKey<String>('pet-chooser-error'),
+              icon: Icons.cloud_off_outlined,
+              title: 'Could not load your pets',
+              message: _error!,
+              action: SecondaryButton(label: 'Try again', onPressed: _load),
             )
           else if (_pets.isEmpty)
             const EmptyState(
