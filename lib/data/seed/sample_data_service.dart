@@ -1,7 +1,7 @@
 /// Seeding: the vaccine catalog is always present; the demo household is opt-in
 /// behind the Profile "Sample data" toggle.
 ///
-/// Demo rows live in a reserved id range (>= 9000) under the household owner, so
+/// Demo rows are a fixed set of ids under the household owner, so
 /// removing them can never touch data the owner typed. Everything is idempotent
 /// (`INSERT OR IGNORE`), which makes the toggle safe to flip repeatedly.
 library;
@@ -15,7 +15,17 @@ import '../sqlite/wire.dart';
 import 'seed_data.dart';
 
 /// First id reserved for demo rows.
-const int demoIdFloor = 9000;
+/// Every row the demo seeder inserts, listed exactly.
+///
+/// An id *range* cannot be used to tell demo rows from the owner's: the tables
+/// are `AUTOINCREMENT`, so after seeding 9001/9002 the next pet the owner adds
+/// gets 9003 — inside the old "demo" range — and clearing sample data deleted
+/// it. Ownership is these lists, not a range.
+const List<int> demoPetIds = <int>[9001, 9002];
+const List<int> demoVaccinationIds = <int>[9101, 9102, 9103, 9104];
+const List<int> demoHealthRecordIds = <int>[9201, 9202];
+const List<int> demoAppointmentIds = <int>[9301, 9302];
+const List<int> demoJournalEntryIds = <int>[9401, 9402, 9403, 9404];
 
 /// Inserts the vaccine catalog (idempotent).
 Future<void> seedVaccineCatalog(Database db) async {
@@ -35,12 +45,15 @@ Future<bool> demoHouseholdExists(Database db) async {
   final List<Map<String, Object?>> rows = await db.query(
     'pet',
     columns: <String>['id'],
-    where: 'id >= ?',
-    whereArgs: <Object?>[demoIdFloor],
+    where: _whereIn(demoPetIds),
+    whereArgs: demoPetIds,
     limit: 1,
   );
   return rows.isNotEmpty;
 }
+
+/// `id IN (?, ?, …)` for [ids]; never empty at the call sites.
+String _whereIn(List<int> ids) => 'id IN (${List<String>.filled(ids.length, '?').join(', ')})';
 
 /// Inserts the two-pet demo household: one dog with an overdue rabies booster,
 /// one cat, a few journal entries, a due-soon vaccine, one upcoming and one past
@@ -241,13 +254,15 @@ Future<void> clearDemoHousehold(Database db) async {
   await db.transaction((Transaction txn) async {
     await txn.delete(
       'appointment',
-      where: 'id >= ?',
-      whereArgs: <Object?>[demoIdFloor],
+      where: _whereIn(demoAppointmentIds),
+      whereArgs: demoAppointmentIds,
     );
+    // Deleting the demo pets cascades to their journal, vaccination and
+    // clinical rows; the owner's rows are never in these lists.
     await txn.delete(
       'pet',
-      where: 'id >= ?',
-      whereArgs: <Object?>[demoIdFloor],
+      where: _whereIn(demoPetIds),
+      whereArgs: demoPetIds,
     );
   });
 }
