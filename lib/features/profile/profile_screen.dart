@@ -211,7 +211,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   key: ValueKey<String>('profile-pet-row-${pet.id}'),
                   pet: pet,
                   ageLabel: ageLabel(pet.dateOfBirth, _controller.today()),
-                  onTap: () => PetRoutes.open(context, pet.id),
+                  onTap: () async {
+                    // The pet page can rename, re-photo or vaccinate the pet;
+                    // reload when it pops or this row shows yesterday's data.
+                    await PetRoutes.open(context, pet.id);
+                    if (mounted) {
+                      await _controller.load();
+                    }
+                  },
                 ),
                 const SizedBox(height: AppSpacing.sm),
               ],

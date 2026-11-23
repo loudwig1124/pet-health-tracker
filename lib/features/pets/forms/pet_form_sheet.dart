@@ -298,13 +298,16 @@ class _PetFormSheetState extends State<PetFormSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      SecondaryButton(
-                        key: const ValueKey<String>('pet-form-photo'),
-                        label: trimmedOrNull(_photo.text) == null
-                            ? 'Choose photo'
-                            : 'Change photo',
-                        onPressed: _pickPhoto,
-                      ),
+                      // The browser build has no filesystem, so the picker
+                      // would open and always answer "No photo chosen".
+                      if (PetPhotos.supported)
+                        SecondaryButton(
+                          key: const ValueKey<String>('pet-form-photo'),
+                          label: trimmedOrNull(_photo.text) == null
+                              ? 'Choose photo'
+                              : 'Change photo',
+                          onPressed: _pickPhoto,
+                        ),
                       if (trimmedOrNull(_photo.text) != null)
                         TextButton(
                           key: const ValueKey<String>('pet-form-photo-clear'),

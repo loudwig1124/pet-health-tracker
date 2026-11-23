@@ -68,7 +68,16 @@ class _FirstRunCardState extends State<FirstRunCard> {
       _error = null;
     });
     try {
-      await widget.services.owners.save(OwnerDraft(name: ownerName));
+      // Keep whatever contact details the household already had: the welcome
+      // card only asks for a name.
+      final Owner current = await widget.services.owners.load();
+      await widget.services.owners.save(
+        OwnerDraft(
+          name: ownerName,
+          email: current.email,
+          phone: current.phone,
+        ),
+      );
       await widget.services.pets.create(
         PetDraft(
           name: petName,
@@ -91,9 +100,22 @@ class _FirstRunCardState extends State<FirstRunCard> {
   }
 
   Future<void> _useSampleHousehold() async {
-    setState(() => _saving = true);
-    await widget.services.setSampleDataEnabled(true);
-    widget.onDone();
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await widget.services.setSampleDataEnabled(true);
+      widget.onDone();
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _saving = false;
+        _error = 'Could not load the sample household. Please try again.';
+      });
+    }
   }
 
   @override

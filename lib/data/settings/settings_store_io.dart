@@ -23,15 +23,22 @@ class JsonSettingsStore implements SettingsStore {
       if (decoded is Map<String, dynamic>) {
         return Map<String, Object?>.from(decoded);
       }
-    } on FormatException {
+    } catch (_) {
+      // A corrupt or unreadable file falls back to defaults: booting with a
+      // blank preference set is recoverable, refusing to start is not.
       return <String, Object?>{};
     }
+    // Valid JSON that is not an object: treat it as absent.
     return <String, Object?>{};
   }
 
   @override
   Future<void> write(Map<String, Object?> values) async {
     await file.parent.create(recursive: true);
-    await file.writeAsString(jsonEncode(values));
+    // Write then rename: a crash mid-write leaves the previous settings intact
+    // instead of a truncated file that reads as "no preferences".
+    final File temporary = File('${file.path}.tmp');
+    await temporary.writeAsString(jsonEncode(values), flush: true);
+    await temporary.rename(file.path);
   }
 }
