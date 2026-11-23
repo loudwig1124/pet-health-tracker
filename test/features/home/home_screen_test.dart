@@ -195,7 +195,6 @@ void main() {
       expect(find.text('Walk logged'), findsNothing);
     });
 
-
     testWidgets('the pet card survives accessibility text sizes', (
       WidgetTester tester,
     ) async {
