@@ -63,5 +63,11 @@ void main() {
     await settleAsync(tester);
     await tester.pump(const Duration(milliseconds: 400));
     await shot(tester, 'live-appointments');
+
+    await tester.tap(find.byKey(const ValueKey<String>('tab-profile')));
+    await tester.pump();
+    await settleAsync(tester);
+    await tester.pump(const Duration(milliseconds: 400));
+    await shot(tester, 'live-profile');
   });
 }

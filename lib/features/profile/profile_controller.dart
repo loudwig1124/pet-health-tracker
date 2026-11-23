@@ -58,8 +58,8 @@ class ProfileController extends ChangeNotifier {
   }
 
   /// Deletes every pet, record and visit, then reloads the screen.
-  Future<void> resetHousehold() async {
-    await services.resetHousehold();
+  Future<void> resetHousehold({bool forgetOwner = false}) async {
+    await services.resetHousehold(forgetOwner: forgetOwner);
     await load();
   }
 

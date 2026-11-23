@@ -256,34 +256,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
   /// Destructive, so it asks first. After a reset the household is empty and
   /// Home shows the Welcome card again.
   Future<void> _resetHousehold() async {
+    bool forgetOwner = false;
     final bool? confirmed = await showDialog<bool>(
       context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Reset household?'),
-        content: const Text(
-          'Every pet, journal entry, vaccination, clinical note and visit will '
-          'be deleted. Your name and settings stay.',
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+      builder: (BuildContext dialogContext) => StatefulBuilder(
+        builder: (BuildContext context, StateSetter setLocal) => AlertDialog(
+          title: const Text('Reset household?'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const Text(
+                'Every pet, journal entry, vaccination, clinical note and '
+                'visit will be deleted.',
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              CheckboxListTile(
+                key: const ValueKey<String>('reset-forget-owner'),
+                value: forgetOwner,
+                onChanged: (bool? value) =>
+                    setLocal(() => forgetOwner = value ?? false),
+                title: const Text('Also forget my name and details'),
+                subtitle: const Text('For a genuine first-run'),
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
+            ],
           ),
-          TextButton(
-            key: const ValueKey<String>('reset-household-confirm'),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              'Delete everything',
-              style: TextStyle(color: AppColors.overdue),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
             ),
-          ),
-        ],
+            TextButton(
+              key: const ValueKey<String>('reset-household-confirm'),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text(
+                'Delete everything',
+                style: TextStyle(color: AppColors.overdue),
+              ),
+            ),
+          ],
+        ),
       ),
     );
     if (confirmed != true || !mounted) {
       return;
     }
-    await _controller.resetHousehold();
+    await _controller.resetHousehold(forgetOwner: forgetOwner);
     if (!mounted) {
       return;
     }

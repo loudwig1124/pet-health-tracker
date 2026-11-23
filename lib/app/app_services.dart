@@ -6,6 +6,7 @@
 /// [AppServices] instance.
 library;
 
+import '../domain/models/owner.dart';
 import '../domain/models/pet.dart';
 import '../data/pet_photos.dart';
 import '../data/repositories/appointment_repository.dart';
@@ -110,12 +111,18 @@ class AppServices {
 
   /// Empties the household: every visit, then every pet (which cascades to its
   /// journal, vaccinations and clinical notes), and turns the sample data off so
-  /// the app lands on the Welcome card. The owner row survives.
-  Future<void> resetHousehold() async {
+  /// the app lands on the Welcome card.
+  ///
+  /// The owner row survives unless [forgetOwner] is set, which blanks the name,
+  /// email and phone back to the placeholder a brand-new install has.
+  Future<void> resetHousehold({bool forgetOwner = false}) async {
     await appointments.deleteAll();
     for (final Pet pet in await pets.list()) {
       await PetPhotos().deleteOwned(pet.photoPath);
       await pets.delete(pet.id);
+    }
+    if (forgetOwner) {
+      await owners.save(const OwnerDraft(name: 'My household'));
     }
     await setSampleDataEnabled(false);
   }
