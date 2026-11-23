@@ -21,9 +21,13 @@ import 'appointments_controller.dart';
 
 /// Confirmation text the screen shows after a successful action.
 class AppointmentActionResult {
-  const AppointmentActionResult(this.message);
+  const AppointmentActionResult(this.message, {this.viewInSection = false});
 
   final String message;
+
+  /// Set when the sheet should hand off to the Appointments screen instead of
+  /// reporting a status change.
+  final bool viewInSection;
 }
 
 /// Opens the actions sheet for [appointment].
@@ -31,12 +35,14 @@ Future<AppointmentActionResult?> showAppointmentActionsSheet(
   BuildContext context, {
   required Appointment appointment,
   required AppointmentsController controller,
+  bool showViewInSection = false,
 }) {
   return showAppSheet<AppointmentActionResult>(
     context,
     (BuildContext _) => AppointmentActionsSheet(
       appointment: appointment,
       controller: controller,
+      showViewInSection: showViewInSection,
     ),
   );
 }
@@ -48,10 +54,14 @@ class AppointmentActionsSheet extends StatefulWidget {
     super.key,
     required this.appointment,
     required this.controller,
+    this.showViewInSection = false,
   });
 
   final Appointment appointment;
   final AppointmentsController controller;
+
+  /// Home's card offers a way into the Appointments tab, filtered to this pet.
+  final bool showViewInSection;
 
   @override
   State<AppointmentActionsSheet> createState() =>
@@ -253,9 +263,31 @@ class _AppointmentActionsSheetState extends State<AppointmentActionsSheet> {
                   Icons.chevron_right,
                   color: AppColors.secondary,
                 ),
-                showDivider: false,
+                showDivider: !widget.showViewInSection,
                 onTap: _isBusy ? null : _reschedule,
               ),
+              if (widget.showViewInSection)
+                ListRow(
+                  key: const ValueKey<String>('appointment-action-view-section'),
+                  title: 'View in Appointments',
+                  subtitle: 'Opens the list filtered to this pet',
+                  leading: const Icon(
+                    Icons.calendar_month_outlined,
+                    color: AppColors.accent,
+                  ),
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: AppColors.secondary,
+                  ),
+                  onTap: _isBusy
+                      ? null
+                      : () => Navigator.of(context).pop(
+                          const AppointmentActionResult(
+                            '',
+                            viewInSection: true,
+                          ),
+                        ),
+                ),
               const SizedBox(height: AppSpacing.lg),
               SecondaryButton(
                 key: const ValueKey<String>('appointment-actions-dismiss'),

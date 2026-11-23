@@ -13,6 +13,8 @@ import '../../app/router.dart';
 import '../../domain/dashboard.dart';
 import '../../domain/models/appointment.dart';
 import '../../domain/models/journal_entry.dart';
+import '../appointments/appointment_actions_sheet.dart';
+import '../appointments/appointments_controller.dart';
 import '../journal/journal_controller.dart';
 import '../journal/journal_entry_sheet.dart';
 import '../../domain/models/owner.dart';
@@ -184,6 +186,39 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /// Opens the appointment's actions sheet over Home. The sheet's "View in
+  /// Appointments" hands off to the tab, filtered to that pet.
+  Future<void> _appointmentActions(Appointment appointment) async {
+    final AppointmentsController controller = AppointmentsController(
+      _services!,
+    );
+    await controller.load();
+    if (!mounted) {
+      controller.dispose();
+      return;
+    }
+    final AppointmentActionResult? result = await showAppointmentActionsSheet(
+      context,
+      appointment: appointment,
+      controller: controller,
+      showViewInSection: true,
+    );
+    controller.dispose();
+    if (result == null) {
+      return;
+    }
+    if (result.viewInSection) {
+      _openAppointments(petId: appointment.petId);
+      return;
+    }
+    await _controller!.load();
+    if (mounted && result.message.isNotEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result.message)));
+    }
+  }
+
   /// Switches to Appointments through the shell (so it fades) and asks it to
   /// focus one pet.
   void _openAppointments({int? petId}) {
@@ -324,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen> {
     };
     final int petPage = pets.isEmpty ? 0 : _pageIndex.clamp(0, pets.length);
     final Pet? activePet = petPage < pets.length ? pets[petPage].pet : null;
-    final Appointment? next = dashboard.nextAppointment;
+    final List<Appointment> upcoming = dashboard.nextAppointments;
     final DateTime now = _controller!.localNow;
 
     return <Widget>[
@@ -423,13 +458,30 @@ class _HomeScreenState extends State<HomeScreen> {
             AppSpacing.xl,
             0,
           ),
-          child: next == null
+          child: upcoming.isEmpty
               ? _NoUpcomingVisit(onTap: () => _openAppointments())
-              : NextAppointmentCard(
-                  key: const ValueKey<String>('next-appointment'),
-                  appointment: next,
-                  petName: next.petId == null ? null : petNames[next.petId],
-                  onTap: () => _openAppointments(petId: next.petId),
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    for (int i = 0; i < upcoming.length; i++)
+                      Padding(
+                        padding: EdgeInsets.only(
+                          top: i == 0 ? 0 : AppSpacing.sm,
+                        ),
+                        child: NextAppointmentCard(
+                          key: i == 0
+                              ? const ValueKey<String>('next-appointment')
+                              : ValueKey<String>(
+                                  'next-appointment-${upcoming[i].id}',
+                                ),
+                          appointment: upcoming[i],
+                          petName: upcoming[i].petId == null
+                              ? null
+                              : petNames[upcoming[i].petId],
+                          onTap: () => _appointmentActions(upcoming[i]),
+                        ),
+                      ),
+                  ],
                 ),
         ),
         const Padding(

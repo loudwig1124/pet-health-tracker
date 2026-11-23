@@ -15,6 +15,7 @@ class Dashboard {
     required this.owner,
     required this.pets,
     this.nextAppointment,
+    this.nextAppointments = const <Appointment>[],
     required this.recentEntries,
     required this.generatedAt,
   });
@@ -22,6 +23,10 @@ class Dashboard {
   final Owner owner;
   final List<PetOverview> pets;
   final Appointment? nextAppointment;
+
+  /// Every still-scheduled appointment sharing the earliest upcoming date.
+  /// "The most urgent day" can belong to more than one pet.
+  final List<Appointment> nextAppointments;
   final List<JournalEntry> recentEntries;
   final DateTime generatedAt;
 
@@ -35,6 +40,7 @@ class PetOverview {
     required this.dueStatus,
     this.nextVaccination,
     this.nextAppointment,
+    this.nextAppointments = const <Appointment>[],
     this.lastVisit,
   });
 
@@ -48,6 +54,10 @@ class PetOverview {
 
   /// This pet's next still-scheduled appointment in the future.
   final Appointment? nextAppointment;
+
+  /// Every still-scheduled appointment sharing the earliest upcoming date.
+  /// "The most urgent day" can belong to more than one pet.
+  final List<Appointment> nextAppointments;
 
   /// Latest completed visit or clinical note, as a calendar date.
   final DateTime? lastVisit;

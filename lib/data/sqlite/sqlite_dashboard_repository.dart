@@ -95,13 +95,43 @@ class SqliteDashboardRepository implements DashboardRepository {
       );
     }
 
+    final List<Appointment> nextAppointments = _nextDayFor(
+      appointments,
+      reference,
+    );
+
     return Dashboard(
       owner: owner,
       pets: overviews,
-      nextAppointment: _nextFor(null, appointments, reference),
+      nextAppointment: nextAppointments.isEmpty ? null : nextAppointments.first,
+      nextAppointments: nextAppointments,
       recentEntries: recentEntries,
       generatedAt: reference,
     );
+  }
+
+  /// All still-scheduled future appointments on the earliest upcoming day.
+  ///
+  /// Two pets booked for the same Tuesday both count as the next thing; a third
+  /// pet booked for Wednesday is not yet urgent.
+  List<Appointment> _nextDayFor(
+    List<Appointment> appointments,
+    DateTime reference,
+  ) {
+    DateTime? earliest;
+    final List<Appointment> matches = <Appointment>[];
+    for (final Appointment appointment in appointments) {
+      if (appointment.status != AppointmentStatus.scheduled ||
+          !appointment.scheduledAt.isAfter(reference)) {
+        continue;
+      }
+      final DateTime day = dateOnly(appointment.scheduledAt.toLocal());
+      earliest ??= day;
+      if (day == earliest) {
+        matches.add(appointment);
+      }
+    }
+    return matches;
   }
 
   /// Next still-scheduled future appointment, optionally for one pet.

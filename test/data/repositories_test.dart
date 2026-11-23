@@ -527,4 +527,63 @@ void main() {
       },
     );
   });
+
+  test('the same urgent day lists every pet booked on it', () async {
+    final SqliteHarness harness = await openHarness(inMemory: true);
+    addTearDown(harness.dispose);
+    final Pet miss = await harness.services.pets.create(
+      PetDraft(
+        name: 'Miso',
+        species: 'Cat',
+        sex: PetSex.female,
+        dateOfBirth: DateTime.utc(2022, 7, 1),
+        weightKg: 4.2,
+      ),
+    );
+    final Pet chew = await harness.services.pets.create(
+      PetDraft(
+        name: 'Chewy',
+        species: 'Dog',
+        sex: PetSex.male,
+        dateOfBirth: DateTime.utc(2020, 2, 2),
+        weightKg: 9.1,
+      ),
+    );
+    final DateTime today = harness.services.today();
+    final DateTime sameDay = today.add(const Duration(days: 2));
+
+    await harness.services.appointments.create(
+      AppointmentDraft(
+        petId: miss.id,
+        clinicName: 'A',
+        purpose: 'Booster',
+        scheduledAt: sameDay.add(const Duration(hours: 9)),
+      ),
+    );
+    await harness.services.appointments.create(
+      AppointmentDraft(
+        petId: chew.id,
+        clinicName: 'B',
+        purpose: 'Check-up',
+        scheduledAt: sameDay.add(const Duration(hours: 14)),
+      ),
+    );
+    // A later day must not join the urgent list.
+    await harness.services.appointments.create(
+      AppointmentDraft(
+        petId: miss.id,
+        clinicName: 'C',
+        purpose: 'Later',
+        scheduledAt: sameDay.add(const Duration(days: 3)),
+      ),
+    );
+
+    final Dashboard dashboard = await harness.services.loadDashboard();
+    expect(dashboard.nextAppointments, hasLength(2));
+    expect(
+      dashboard.nextAppointments.map((Appointment a) => a.petId),
+      containsAll(<int>[miss.id, chew.id]),
+    );
+  });
+
 }
