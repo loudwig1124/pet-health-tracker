@@ -288,6 +288,11 @@ class _HomeScreenState extends State<HomeScreen> {
     messenger.showSnackBar(
       SnackBar(
         content: Text('${entry.kind.label} logged'),
+        // Material's default is `persist = action != null`, so an undo
+        // snackbar would stay until dismissed. It should time out like any
+        // other confirmation.
+        persist: false,
+        duration: const Duration(seconds: 5),
         action: SnackBarAction(label: 'Undo', onPressed: () => _undo(entry)),
       ),
     );

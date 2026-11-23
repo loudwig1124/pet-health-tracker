@@ -169,6 +169,22 @@ void main() {
       },
     );
 
+
+    testWidgets('the instant-log confirmation times out on its own', (
+      WidgetTester tester,
+    ) async {
+      usePhoneSurface(tester);
+      await pumpHome(tester, harness.services);
+
+      await tester.tap(find.byKey(const ValueKey<String>('quick-log-walk')));
+      await settleDatabase(tester);
+      expect(find.text('Walk logged'), findsOneWidget);
+
+      // Material persists snackbars that carry an action unless told not to.
+      await expireSnackBar(tester);
+      expect(find.text('Walk logged'), findsNothing);
+    });
+
     testWidgets(
       'a chip tap writes kind + occurred_at only, and undo removes it',
       (WidgetTester tester) async {
