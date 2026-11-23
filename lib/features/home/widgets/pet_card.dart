@@ -2,7 +2,6 @@
 /// the "Last visit" line with its chevron.
 library;
 
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 
@@ -11,6 +10,8 @@ import '../../../domain/models/pet.dart';
 import '../../../ui/format/app_formats.dart';
 import '../../../ui/kit/app_card.dart';
 import '../../../ui/kit/app_chip.dart';
+import '../../../platform/photo_files.dart';
+import '../../../platform/photo_image.dart';
 import '../../../ui/theme/app_theme.dart';
 
 /// Sized by the pager (310 x 264 on a 390-wide screen); the caller supplies the
@@ -148,13 +149,14 @@ class _PetAvatar extends StatelessWidget {
       child: Icon(Icons.pets, size: _size * 0.42, color: AppColors.dueSoon),
     );
 
-    final String? photoPath = pet.photoPath;
-    if (photoPath == null || photoPath.isEmpty) {
+    final String? storedPath = pet.photoPath;
+    if (storedPath == null || !photoExists(storedPath)) {
       return placeholder;
     }
+    final String photoPath = storedPath;
     return ClipOval(
-      child: Image.file(
-        File(photoPath),
+      child: photoImage(
+        photoPath,
         width: _size,
         height: _size,
         fit: BoxFit.cover,

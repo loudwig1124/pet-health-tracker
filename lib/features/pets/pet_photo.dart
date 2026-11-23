@@ -2,10 +2,11 @@
 /// the pet form: one image widget that fills its frame, never a black crop.
 library;
 
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../../platform/photo_files.dart';
+import '../../platform/photo_image.dart';
 import '../../ui/theme/app_theme.dart';
 
 /// Warm paper tint used behind a missing photo. Derived from the theme accent
@@ -23,7 +24,7 @@ String? existingPhotoPath(String? photoPath) {
   if (trimmed == null || trimmed.isEmpty) {
     return null;
   }
-  return File(trimmed).existsSync() ? trimmed : null;
+  return photoExists(trimmed) ? trimmed : null;
 }
 
 /// First letter of a name, for photo fallbacks ("?" when unnamed).
@@ -55,8 +56,8 @@ class PetPhoto extends StatelessWidget {
     if (path == null) {
       return _PhotoFallback(petName: petName);
     }
-    return Image.file(
-      File(path),
+    return photoImage(
+      path,
       fit: fit,
       width: double.infinity,
       height: double.infinity,
@@ -96,7 +97,7 @@ class PetAvatar extends StatelessWidget {
                   ),
                 ),
               )
-            : Image.file(File(path), fit: BoxFit.cover),
+            : photoImage(path, fit: BoxFit.cover),
       ),
     );
   }

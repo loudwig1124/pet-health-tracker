@@ -5,9 +5,9 @@
 /// tests pass `databaseFactoryFfi`; only this directory imports sqflite.
 library;
 
-import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
+import '../../platform/platform_database.dart';
 import 'schema_asset.dart';
 
 /// One opened application database.
@@ -64,10 +64,11 @@ class AppDatabase {
   static Future<AppDatabase> openDefault({
     SchemaLoader schemaLoader = loadSchemaAsset,
   }) async {
-    final String basePath = await getDatabasesPath();
+    final ({DatabaseFactory factory, String path}) platform =
+        await platformDatabase();
     return open(
-      factory: databaseFactory,
-      path: p.join(basePath, fileName),
+      factory: platform.factory,
+      path: platform.path,
       schemaLoader: schemaLoader,
     );
   }

@@ -1,12 +1,9 @@
 /// Boot: open the database, load settings and seed what the first launch needs.
 library;
 
-import 'dart:io';
-
-import 'package:path/path.dart' as p;
-
-import '../data/settings/settings_store.dart';
 import '../data/sqlite/app_database.dart';
+import '../platform/platform_database.dart';
+import '../platform/platform_settings.dart';
 import 'app_services.dart';
 import 'app_settings.dart';
 
@@ -29,8 +26,8 @@ Future<AppServices> openAppServices({
     resolvedSettings = settings;
   } else {
     resolvedSettings = AppSettings(
-      settingsStore: JsonSettingsStore(
-        File(p.join(p.dirname(resolvedDatabase.path), 'settings.json')),
+      settingsStore: createSettingsStore(
+        platformDataDirectory(resolvedDatabase.path),
       ),
     );
     await resolvedSettings.load();

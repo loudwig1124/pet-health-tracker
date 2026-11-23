@@ -36,7 +36,7 @@ void main() {
     expect(offenders, isEmpty, reason: offenders.join('\n'));
   });
 
-  test('only lib/data and lib/app/di.dart import sqflite', () {
+  test('only lib/data, lib/platform and lib/app/di.dart import sqflite', () {
     final List<String> offenders = <String>[];
     for (final FileSystemEntity entity in Directory(
       'lib',
@@ -48,8 +48,11 @@ void main() {
       if (!source.contains('package:sqflite/')) {
         continue;
       }
+      // `lib/platform/` is the per-platform seam: it owns the choice of
+      // database factory (native sqflite vs the web WASM one).
       final bool allowed =
           entity.path.startsWith('lib/data/') ||
+          entity.path.startsWith('lib/platform/') ||
           entity.path == 'lib/app/di.dart';
       if (!allowed) {
         offenders.add(entity.path);

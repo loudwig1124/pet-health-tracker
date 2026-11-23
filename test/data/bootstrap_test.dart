@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_health_tracker/app/app_settings.dart';
 import 'package:pet_health_tracker/app/di.dart';
-import 'package:pet_health_tracker/data/settings/settings_store.dart';
+import 'package:pet_health_tracker/data/settings/settings_store_io.dart';
 import 'package:pet_health_tracker/data/sqlite/app_database.dart';
 import 'package:pet_health_tracker/domain/models/pet.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
