@@ -6,6 +6,8 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../ui/kit/app_snack_bar.dart';
+
 import '../../../domain/models/journal_entry.dart';
 import '../../../domain/models/pet.dart';
 import '../../../ui/format/app_formats.dart';
@@ -127,9 +129,7 @@ class _QuickLogFormState extends State<_QuickLogForm> {
         return;
       }
       setState(() => _saving = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Couldn't save the entry.")));
+      showAppSnack(context, "Couldn't save the entry.");
     }
   }
 

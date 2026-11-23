@@ -6,6 +6,8 @@
 library;
 
 import 'package:flutter/material.dart';
+
+import '../../ui/kit/app_snack_bar.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../domain/models/journal_entry.dart';
@@ -113,7 +115,7 @@ Future<void> _addHealthRecord(
 void _showMessage(BuildContext context, String message) {
   final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
   messenger.hideCurrentSnackBar();
-  messenger.showSnackBar(SnackBar(content: Text(message)));
+  showAppSnack(context, message);
 }
 
 /// The sheet body: three real create flows, no placeholders.

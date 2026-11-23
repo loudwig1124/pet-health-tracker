@@ -154,7 +154,7 @@ Screenshots of the running app can be regenerated without a device:
 
 - **Centre `+`** — book a visit, log an entry, add a health record.
 - **Quick-log chip** — tap saves that kind at the current moment; the confirmation
-  offers Undo for five seconds. **Long-press** opens the full form (date, time,
+  offers Undo for three seconds. **Long-press** opens the full form (date, time,
   note, duration).
 - **Home appointment card** — opens that visit's actions sheet; inside it,
   *View in Appointments* switches tabs filtered to that pet.

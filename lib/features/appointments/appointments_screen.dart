@@ -4,6 +4,8 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../ui/kit/app_snack_bar.dart';
+
 import '../../app/app_scope.dart';
 import '../../app/navigation_requests.dart';
 import '../../app/shell/app_shell.dart';
@@ -99,8 +101,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     if (result == null || !context.mounted) {
       return;
     }
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(result.message)));
+    showAppSnack(context, result.message);
   }
 
   @override

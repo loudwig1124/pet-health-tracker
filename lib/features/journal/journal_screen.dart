@@ -6,6 +6,8 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../ui/kit/app_snack_bar.dart';
+
 import '../../app/app_scope.dart';
 import '../../app/navigation_requests.dart';
 import '../../app/shell/app_shell.dart';
@@ -87,8 +89,7 @@ class _JournalScreenState extends State<JournalScreen> {
     final String message = result == JournalEntrySheetResult.deleted
         ? 'Entry deleted.'
         : 'Entry updated.';
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    showAppSnack(context, message);
   }
 
   @override

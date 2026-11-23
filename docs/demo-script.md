@@ -74,7 +74,7 @@ toggle at the end is the reset.
 
 1. With Bella’s card active, tap the **Walk** chip.
 2. A snackbar says `Walk logged · UNDO` and **Recent** updates immediately.
-3. Leave the snackbar alone for five seconds and let it disappear.
+3. Leave the snackbar alone for three seconds and let it disappear.
    - Narration: “One tap stores the kind and the moment — no invented duration.
      Long-press opens the full form for a note or another time.”
 
@@ -138,6 +138,6 @@ toggle at the end is the reset.
 - **A list looks stale** — pull down to refresh; the tab that regains focus also
   reloads by itself.
 - **Demo data was edited too much** — Profile → Sample data off, then on.
-- **Accidental quick log** — the snackbar offers **UNDO** for five seconds.
+- **Accidental quick log** — the snackbar offers **UNDO** for three seconds.
 - **Nothing loads** — quit and relaunch; the database, owner and vaccine catalog
   are created on first launch.

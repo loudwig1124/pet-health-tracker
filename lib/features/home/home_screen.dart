@@ -3,6 +3,8 @@
 library;
 
 import 'package:flutter/material.dart';
+
+import '../../ui/kit/app_snack_bar.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/app_scope.dart';
@@ -229,9 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     await _controller!.load();
     if (mounted && result.message.isNotEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(result.message)));
+      showAppSnack(context, result.message);
     }
   }
 
@@ -299,26 +299,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showUndo(JournalEntry entry) {
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text('${entry.kind.label} logged'),
-        // Material's default is `persist = action != null`, so an undo
-        // snackbar would stay until dismissed. It should time out like any
-        // other confirmation.
-        persist: false,
-        duration: const Duration(seconds: 5),
-        action: SnackBarAction(label: 'Undo', onPressed: () => _undo(entry)),
-      ),
+    showAppSnack(
+      context,
+      '${entry.kind.label} logged',
+      action: SnackBarAction(label: 'Undo', onPressed: () => _undo(entry)),
     );
   }
 
-  void _showMessage(String message) {
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(SnackBar(content: Text(message)));
-  }
+  void _showMessage(String message) => showAppSnack(context, message);
 
   @override
   Widget build(BuildContext context) {

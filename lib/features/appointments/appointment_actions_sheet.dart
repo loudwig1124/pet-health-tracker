@@ -6,6 +6,8 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../ui/kit/app_snack_bar.dart';
+
 import '../../domain/models/appointment.dart';
 import '../../domain/rules/appointment_rules.dart';
 import '../../ui/format/app_formats.dart';
@@ -88,16 +90,13 @@ class _AppointmentActionsSheetState extends State<AppointmentActionsSheet> {
         return;
       }
       setState(() => _isBusy = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(error.block.message)));
+      showAppSnack(context, error.block.message);
     } catch (_) {
       if (!mounted) {
         return;
       }
       setState(() => _isBusy = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not update this appointment.')),
-      );
+      showAppSnack(context, 'Could not update this appointment.');
     }
   }
 

@@ -5,6 +5,8 @@
 library;
 
 import 'package:flutter/material.dart';
+
+import '../../ui/kit/app_snack_bar.dart';
 import 'package:flutter/services.dart';
 
 import '../../domain/models/journal_entry.dart';
@@ -124,9 +126,7 @@ class _JournalEntryEditSheetState extends State<JournalEntryEditSheet> {
         return;
       }
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not save this entry.')),
-      );
+      showAppSnack(context, 'Could not save this entry.');
     }
   }
 
@@ -173,9 +173,7 @@ class _JournalEntryEditSheetState extends State<JournalEntryEditSheet> {
         return;
       }
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not delete this entry.')),
-      );
+      showAppSnack(context, 'Could not delete this entry.');
     }
   }
 

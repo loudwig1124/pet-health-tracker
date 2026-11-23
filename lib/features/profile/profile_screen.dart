@@ -4,6 +4,8 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../ui/kit/app_snack_bar.dart';
+
 import '../../app/app_scope.dart';
 import '../../app/navigation_requests.dart';
 import '../../app/shell/app_shell.dart';
@@ -169,69 +171,86 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  static const EdgeInsets _contentInset = EdgeInsets.symmetric(
+    horizontal: AppSpacing.xl,
+  );
+
   Widget _content(Owner owner) {
     final List<Pet> pets = _controller.pets;
     final AppSettings settings = _controller.settings;
     return ListView(
+      // No horizontal padding here: the settings rows paint their press state
+      // to the screen's edges. Text blocks carry their own inset instead, and
+      // each row's content is aligned with `horizontalInset`.
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xl,
+        0,
         AppSpacing.sm,
-        AppSpacing.xl,
+        0,
         kShellContentBottomPadding,
       ),
       children: <Widget>[
-        Text('Profile', style: AppTextStyles.display),
-        const SizedBox(height: AppSpacing.xl),
-        _OwnerBlock(owner: owner, onEdit: () => _editOwner(owner)),
-        const SizedBox(height: AppSpacing.md),
-        const Divider(height: 1),
-        Column(
-          key: const ValueKey<String>('profile-pets-section'),
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            SectionLabel(
-              'My pets',
-              trailing: Text(
-                '${pets.length}',
-                style: AppTextStyles.sectionLabel,
-              ),
-            ),
-            if (pets.isEmpty)
-              const Padding(
-                padding: EdgeInsets.only(bottom: AppSpacing.sm),
-                child: Text(
-                  'No pets yet — add the first one.',
-                  key: ValueKey<String>('profile-empty-pets'),
-                  style: AppTextStyles.caption,
-                ),
-              )
-            else
-              for (final Pet pet in pets) ...<Widget>[
-                _PetRow(
-                  key: ValueKey<String>('profile-pet-row-${pet.id}'),
-                  pet: pet,
-                  ageLabel: ageLabel(pet.dateOfBirth, _controller.today()),
-                  onTap: () async {
-                    // The pet page can rename, re-photo or vaccinate the pet;
-                    // reload when it pops or this row shows yesterday's data.
-                    await PetRoutes.open(context, pet.id);
-                    if (mounted) {
-                      await _controller.load();
-                    }
-                  },
-                ),
-                const SizedBox(height: AppSpacing.sm),
-              ],
-            _AddPetRow(onTap: _addPet),
-          ],
+        const Padding(
+          padding: _contentInset,
+          child: Text('Profile', style: AppTextStyles.display),
         ),
-        const SectionLabel('Settings'),
+        const SizedBox(height: AppSpacing.xl),
+        Padding(
+          padding: _contentInset,
+          child: _OwnerBlock(owner: owner, onEdit: () => _editOwner(owner)),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        const Padding(padding: _contentInset, child: Divider(height: 1)),
+        Padding(
+          padding: _contentInset,
+          child: Column(
+            key: const ValueKey<String>('profile-pets-section'),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              SectionLabel(
+                'My pets',
+                trailing: Text(
+                  '${pets.length}',
+                  style: AppTextStyles.sectionLabel,
+                ),
+              ),
+              if (pets.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: Text(
+                    'No pets yet — add the first one.',
+                    key: ValueKey<String>('profile-empty-pets'),
+                    style: AppTextStyles.caption,
+                  ),
+                )
+              else
+                for (final Pet pet in pets) ...<Widget>[
+                  _PetRow(
+                    key: ValueKey<String>('profile-pet-row-${pet.id}'),
+                    pet: pet,
+                    ageLabel: ageLabel(pet.dateOfBirth, _controller.today()),
+                    onTap: () async {
+                      // The pet page can rename, re-photo or vaccinate the pet;
+                      // reload when it pops or this row shows yesterday's data.
+                      await PetRoutes.open(context, pet.id);
+                      if (mounted) {
+                        await _controller.load();
+                      }
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                ],
+              _AddPetRow(onTap: _addPet),
+            ],
+          ),
+        ),
+        const Padding(padding: _contentInset, child: SectionLabel('Settings')),
         Column(
           key: const ValueKey<String>('settings-section'),
           children: <Widget>[
             ListRow(
               key: const ValueKey<String>('setting-due-window'),
               title: 'Due-soon window',
+              horizontalInset: AppSpacing.xl,
               onTap: _pickDueSoonWindow,
               trailing: Text(
                 '${settings.dueSoonWindowDays} days',
@@ -241,6 +260,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ListRow(
               key: const ValueKey<String>('setting-weight-unit'),
               title: 'Weight unit',
+              horizontalInset: AppSpacing.xl,
               onTap: _pickWeightUnit,
               trailing: Text(
                 settings.weightUnit.wire,
@@ -250,6 +270,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ListRow(
               key: const ValueKey<String>('setting-sample-data'),
               title: 'Sample data',
+              horizontalInset: AppSpacing.xl,
               trailing: Switch(
                 key: const ValueKey<String>('setting-sample-data-switch'),
                 value: settings.sampleDataEnabled,
@@ -260,6 +281,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               key: const ValueKey<String>('setting-reset-household'),
               title: 'Reset household',
               subtitle: 'Deletes every pet, record and visit',
+              horizontalInset: AppSpacing.xl,
               showDivider: false,
               trailing: Text(
                 'Reset',
@@ -272,10 +294,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
         const SizedBox(height: AppSpacing.xl),
-        Text(
-          _versionLine(pets.length, _controller.recordCount),
-          key: const ValueKey<String>('profile-version'),
-          style: AppTextStyles.caption,
+        Padding(
+          padding: _contentInset,
+          child: Text(
+            _versionLine(pets.length, _controller.recordCount),
+            key: const ValueKey<String>('profile-version'),
+            style: AppTextStyles.caption,
+          ),
         ),
       ],
     );
@@ -335,9 +360,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Household reset.')),
-    );
+    showAppSnack(context, 'Household reset.');
   }
 
   static String _versionLine(int pets, int records) {

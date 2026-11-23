@@ -6,6 +6,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../ui/kit/app_snack_bar.dart';
+
 import '../../../app/app_services.dart';
 import '../../../domain/models/pet.dart';
 import '../../../domain/rules/pet_validation.dart';
@@ -163,9 +165,7 @@ class _PetFormSheetState extends State<PetFormSheet> {
       if (path == null) {
         // The user backed out of the picker. Say so, so "nothing happened"
         // can be told apart from a failure.
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No photo chosen.')),
-        );
+        showAppSnack(context, 'No photo chosen.');
         return;
       }
       setState(() => _photo.text = path);
@@ -176,9 +176,12 @@ class _PetFormSheetState extends State<PetFormSheet> {
       // Surface the real reason: a plugin that never registered and a missing
       // permission look identical otherwise.
       final String detail = error.toString();
+      // The picker's failure text stays a little longer: it is the only clue
+      // when the platform plugin misbehaves.
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           duration: const Duration(seconds: 8),
+          persist: false,
           content: Text(
             detail.length > 220 ? detail.substring(0, 220) : detail,
           ),
