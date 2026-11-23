@@ -128,7 +128,7 @@ toggle at the end is the reset.
 ## 4:45 — Close
 
 1. Tap **Home**. The greeting reads `Good …, Maria`; the household is back.
-2. One sentence: “Tested against the real SQLite schema — analyze clean, 184
+2. One sentence: “Tested against the real SQLite schema — analyze clean, 179
    tests green, and the app never talks to a network.”
 
 ## If something goes wrong

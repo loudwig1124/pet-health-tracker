@@ -96,7 +96,7 @@ the demo rows, on reseeds them, and the choice persists across restarts.
 
 ```bash
 ./tool/fv analyze                        # static analysis, must be clean
-./tool/fv test                           # full suite — 184 tests
+./tool/fv test                           # full suite — 179 tests
 ./tool/fv test test/app                  # router / shell boot
 ./tool/fv test test/features/home        # one feature area
 ./tool/format --set-exit-if-changed lib test
