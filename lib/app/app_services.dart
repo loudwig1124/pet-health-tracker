@@ -89,10 +89,28 @@ class AppServices {
   /// and the demo household follows the persisted toggle.
   Future<void> bootstrap() async {
     await owners.ensureDefault();
+    await _repairLeftoverDemoPersona();
     await sampleData.seedCatalog();
     if (settings.sampleDataEnabled) {
       await sampleData.seedDemo();
     }
+  }
+
+  /// Earlier builds named a brand-new household after the demo persona. A
+  /// browser that visited then keeps that owner row (data survives redeploys),
+  /// so an unclaimed household is put back to the placeholder. A household with
+  /// pets, or with contact details, is left alone: that is a real name.
+  Future<void> _repairLeftoverDemoPersona() async {
+    final Owner owner = await owners.load();
+    if (owner.name != 'Maria Santos' ||
+        owner.email.isNotEmpty ||
+        owner.phone.isNotEmpty) {
+      return;
+    }
+    if ((await pets.list()).isNotEmpty) {
+      return;
+    }
+    await owners.save(const OwnerDraft(name: kDefaultOwnerName));
   }
 
   /// Keeps the Profile "Sample data" toggle and the rows it controls in step.

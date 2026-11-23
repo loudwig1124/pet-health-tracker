@@ -4,6 +4,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_health_tracker/domain/models/journal_entry.dart';
+import 'package:pet_health_tracker/domain/models/owner.dart';
 import 'package:pet_health_tracker/domain/models/pet.dart';
 
 import 'test_support.dart';
@@ -68,4 +69,35 @@ void main() {
       isEmpty,
     );
   });
+
+  test('boot repairs a household left with the demo persona', () async {
+    final SqliteHarness harness = await openHarness(inMemory: true);
+    addTearDown(harness.dispose);
+    // The state an older build left in a returning browser: demo name, no pets.
+    await harness.services.owners.save(const OwnerDraft(name: 'Maria Santos'));
+
+    await harness.services.bootstrap();
+
+    expect((await harness.services.owners.load()).name, kDefaultOwnerName);
+  });
+
+  test('boot keeps a demo-persona name once the household has a pet', () async {
+    final SqliteHarness harness = await openHarness(inMemory: true);
+    addTearDown(harness.dispose);
+    await harness.services.owners.save(const OwnerDraft(name: 'Maria Santos'));
+    await harness.services.pets.create(
+      PetDraft(
+        name: 'Coco',
+        species: 'Dog',
+        sex: PetSex.female,
+        dateOfBirth: DateTime.utc(2023, 5, 1),
+        weightKg: 8.5,
+      ),
+    );
+
+    await harness.services.bootstrap();
+
+    expect((await harness.services.owners.load()).name, 'Maria Santos');
+  });
+
 }
