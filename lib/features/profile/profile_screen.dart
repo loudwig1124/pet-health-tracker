@@ -41,17 +41,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late final AppServices _services;
   late final ProfileController _controller;
   bool _started = false;
+  bool _branchActive = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_started) {
+    // The shell keeps visited branches alive, so this screen must reload when
+    // it becomes active again — otherwise a name saved during onboarding, or an
+    // owner edit made elsewhere, is not reflected here.
+    final bool active = TickerMode.valuesOf(context).enabled;
+    if (!_started) {
+      _started = true;
+      // `AppScope.of` cannot run in initState; this is the first safe lookup.
+      _services = AppScope.of(context);
+      _controller = ProfileController(services: _services)..load();
+      _branchActive = active;
       return;
     }
-    _started = true;
-    // `AppScope.of` cannot run in initState; this is the first safe lookup.
-    _services = AppScope.of(context);
-    _controller = ProfileController(services: _services)..load();
+    if (active && !_branchActive) {
+      _controller.load();
+    }
+    _branchActive = active;
   }
 
   @override

@@ -9,6 +9,10 @@ import '../../ui/theme/app_theme.dart';
 import 'centre_action_sheet.dart';
 
 /// Height of the bar itself (the raised button adds 26 px above it).
+/// How far the bar's content (tabs and the centre action) sits below the top of
+/// the paper, to close the gap above the screen's bottom edge.
+const double kShellBarContentTop = 6;
+
 /// Height of the paper bar below the content. Independent of the centre
 /// action: the action is centred inside it, so growing the bar gives the tab
 /// items and the action the same clearance under the hairline.
@@ -194,7 +198,7 @@ class AppShellBar extends StatelessWidget {
           Positioned(
             left: 0,
             right: 0,
-            top: 0,
+            top: kShellBarContentTop,
             height: kShellBarHeight,
             child: Row(
               children: <Widget>[
@@ -225,7 +229,10 @@ class AppShellBar extends StatelessWidget {
           // A touch above the bar's centre line, so its top edge lands on the
           // tab icons' optical line rather than below it.
           Positioned(
-            top: (kShellBarHeight - CentreActionButton.height) / 2 - 6,
+            top:
+                (kShellBarHeight - CentreActionButton.height) / 2 -
+                6 +
+                kShellBarContentTop,
             left: 0,
             right: 0,
             child: Center(
