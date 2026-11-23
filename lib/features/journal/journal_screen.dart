@@ -132,15 +132,6 @@ class _JournalBody extends StatelessWidget {
         action: SecondaryButton(label: 'Try again', onPressed: controller.load),
       );
     }
-    if (controller.entries.isEmpty) {
-      return const EmptyState(
-        key: ValueKey<String>('journal-empty'),
-        icon: Icons.menu_book_outlined,
-        title: 'No entries yet',
-        message: 'Walks, feedings and notes appear here, newest first.',
-      );
-    }
-
     final List<JournalDayGroup> groups = groupJournalEntriesByDay(
       controller.visibleEntries,
       controller.localToday,
@@ -149,14 +140,22 @@ class _JournalBody extends StatelessWidget {
       _JournalPetFilterRow(controller: controller),
     ];
     if (controller.visibleEntries.isEmpty) {
+      final bool filtered = controller.petFilterId != null;
       children.add(
-        const Padding(
-          padding: EdgeInsets.only(top: AppSpacing.xxl, left: AppSpacing.md),
+        Padding(
+          padding: const EdgeInsets.only(top: AppSpacing.xxl, left: AppSpacing.md),
           child: EmptyState(
-            key: ValueKey<String>('journal-filter-empty'),
-            icon: Icons.filter_alt_off_outlined,
-            title: 'Nothing for this pet',
-            message: 'No journal entries for this pet yet.',
+            key: ValueKey<String>(
+              filtered ? 'journal-filter-empty' : 'journal-empty',
+            ),
+            icon: filtered
+                ? Icons.filter_alt_off_outlined
+                : Icons.menu_book_outlined,
+            title: filtered ? 'Nothing for this pet' : 'No entries yet',
+            message: filtered
+                ? 'No journal entries for this pet yet — pick another pet or '
+                      '“All pets”.'
+                : 'Walks, feedings and notes appear here, newest first.',
           ),
         ),
       );

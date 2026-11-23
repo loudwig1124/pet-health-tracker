@@ -298,4 +298,30 @@ void main() {
     expect(find.textContaining('Miso ·'), findsWidgets);
   });
 
+
+  testWidgets('a pet with no entries still offers the other filters', (
+    WidgetTester tester,
+  ) async {
+    final Pet quiet = await tester.runAsync<Pet>(
+      () => harness.services.pets.create(
+        PetDraft(
+          name: 'Quiet',
+          species: 'Rabbit',
+          sex: PetSex.female,
+          dateOfBirth: DateTime.utc(2024, 1, 1),
+          weightKg: 1.8,
+        ),
+      ),
+    ) as Pet;
+    await pumpJournal(tester);
+
+    await tapByKey(tester, 'journal-pet-filter-${quiet.id}');
+
+    // The empty result must not take the filter row away with it.
+    expect(find.byKey(const ValueKey<String>('journal-filter-empty')), findsOneWidget);
+    expect(find.byKey(const ValueKey<String>('journal-pet-filter-all')), findsOneWidget);
+    await tapByKey(tester, 'journal-pet-filter-all');
+    expect(find.text('Fed'), findsOneWidget);
+  });
+
 }
