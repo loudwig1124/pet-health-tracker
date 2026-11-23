@@ -587,4 +587,45 @@ void main() {
     );
   });
 
+
+  test('the due rule reads the household calendar day, not the UTC one', () async {
+    final SqliteHarness harness = await openHarness(inMemory: true);
+    addTearDown(harness.dispose);
+    final Pet pet = await harness.services.pets.create(
+      PetDraft(
+        name: 'Bella',
+        species: 'Dog',
+        sex: PetSex.female,
+        dateOfBirth: DateTime.utc(2020, 1, 1),
+        weightKg: 12.4,
+      ),
+    );
+    await harness.services.vaccinations.append(
+      VaccinationDraft(
+        petId: pet.id,
+        vaccineName: 'Rabies',
+        vaccinationDate: DateTime.utc(2025, 1, 1),
+        nextDueDate: DateTime.utc(2026, 11, 22),
+      ),
+    );
+
+    // 22 Nov at 16:00 UTC is already 23 Nov in Manila: the dose is a day late.
+    final DateTime instant = DateTime.utc(2026, 11, 22, 16);
+    final Dashboard localDay = await harness.services.dashboard.load(
+      now: instant,
+      today: DateTime.utc(2026, 11, 23),
+    );
+    expect(
+      localDay.pets.single.dueStatus,
+      VaccinationDueStatus.overdue,
+    );
+
+    // Same instant read as 22 Nov makes it "due today" instead.
+    final Dashboard utcDay = await harness.services.dashboard.load(
+      now: instant,
+      today: DateTime.utc(2026, 11, 22),
+    );
+    expect(utcDay.pets.single.dueStatus, VaccinationDueStatus.dueSoon);
+  });
+
 }

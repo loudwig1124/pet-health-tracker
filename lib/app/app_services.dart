@@ -106,8 +106,11 @@ class AppServices {
   }
 
   /// Home's read model, using the persisted due-soon window.
-  Future<Dashboard> loadDashboard() =>
-      dashboard.load(now: now(), dueSoonWindowDays: settings.dueSoonWindowDays);
+  Future<Dashboard> loadDashboard() => dashboard.load(
+    now: now(),
+    today: today(),
+    dueSoonWindowDays: settings.dueSoonWindowDays,
+  );
 
   /// Empties the household: every visit, then every pet (which cascades to its
   /// journal, vaccinations and clinical notes), and turns the sample data off so

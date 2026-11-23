@@ -24,9 +24,13 @@ class SqliteDashboardRepository implements DashboardRepository {
   @override
   Future<Dashboard> load({
     required DateTime now,
+    DateTime? today,
     int dueSoonWindowDays = defaultDueSoonWindowDays,
   }) async {
     final DateTime reference = now.toUtc();
+    // Due dates are calendar days. Deriving the day from the instant in UTC put
+    // Home a day behind the pet page between local midnight and the UTC offset.
+    final DateTime calendarDay = dateOnly(today ?? now.toLocal());
 
     final List<Map<String, Object?>> ownerRows = await _db.query(
       'owner',
@@ -85,7 +89,7 @@ class SqliteDashboardRepository implements DashboardRepository {
           pet: pet,
           dueStatus: petVaccinationDueStatus(
             petVaccinations,
-            reference,
+            calendarDay,
             windowDays: dueSoonWindowDays,
           ),
           nextVaccination: nextDueVaccination(petVaccinations),
@@ -163,8 +167,10 @@ class SqliteDashboardRepository implements DashboardRepository {
           appointment.status != AppointmentStatus.completed) {
         continue;
       }
+      // Presented as a date label on the pet card, so it must be the local
+      // calendar day, not the UTC one.
       final DateTime visitDate = dateOnly(
-        appointment.completedAt ?? appointment.scheduledAt,
+        (appointment.completedAt ?? appointment.scheduledAt).toLocal(),
       );
       if (latest == null || visitDate.isAfter(latest)) {
         latest = visitDate;
