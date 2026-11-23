@@ -17,6 +17,17 @@ abstract final class NavigationRequests {
   static void bumpHousehold() => householdRevision.value++;
 
   /// Pet the Appointments list should focus when it next opens.
-  static final ValueNotifier<int?> appointmentsPetFilter =
-      ValueNotifier<int?>(null);
+  ///
+  /// A nullable *notifier* could not say "open with no pet filter": null was
+  /// both "no request" and "no filter". The request object separates them.
+  static final ValueNotifier<PetFilterRequest?> appointmentsFilter =
+      ValueNotifier<PetFilterRequest?>(null);
+}
+
+/// One "open Appointments focused on this pet" request. A null [petId] means the
+/// visit belongs to the household rather than a pet, so the list opens unfiltered.
+class PetFilterRequest {
+  const PetFilterRequest(this.petId);
+
+  final int? petId;
 }

@@ -61,12 +61,14 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
 
   /// A tap on Home's appointment card asks for one pet; take it and clear it.
   void _applyRequestedFilter() {
-    final int? pending = NavigationRequests.appointmentsPetFilter.value;
+    final PetFilterRequest? pending = NavigationRequests.appointmentsFilter.value;
     if (pending == null) {
       return;
     }
-    NavigationRequests.appointmentsPetFilter.value = null;
-    _controller?.selectPet(pending);
+    NavigationRequests.appointmentsFilter.value = null;
+    // A null pet id means "this visit is the household's": show everything
+    // rather than leaving whatever filter was applied last time.
+    _controller?.selectPet(pending.petId);
   }
 
   /// Another screen wrote something: refresh, but only while this branch is

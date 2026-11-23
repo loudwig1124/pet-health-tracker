@@ -233,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Switches to Appointments through the shell (so it fades) and asks it to
   /// focus one pet.
   void _openAppointments({int? petId}) {
-    NavigationRequests.appointmentsPetFilter.value = petId;
+    NavigationRequests.appointmentsFilter.value = PetFilterRequest(petId);
     final AppShellSelection? shell = AppShellSelection.maybeOf(context);
     if (shell != null) {
       shell.select(AppShellSelection.appointments);

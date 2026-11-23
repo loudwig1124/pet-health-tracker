@@ -103,6 +103,11 @@ class _AppShellState extends State<AppShell>
   Future<void> _select(int index) async {
     final StatefulNavigationShell shell = widget.navigationShell;
     if (index == shell.currentIndex) {
+      // Tapping the tab that is already showing must also cancel a switch that
+      // is still fading out — otherwise the earlier tap wins and the app lands
+      // on a tab the user did not choose last.
+      _generation += 1;
+      _fade.value = 1;
       // Tapping the current tab returns it to its initial route.
       shell.goBranch(index, initialLocation: true);
       return;
@@ -120,15 +125,25 @@ class _AppShellState extends State<AppShell>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: AppShellSelection(
-        select: _select,
-        child: FadeTransition(opacity: _fade, child: widget.navigationShell),
-      ),
-      bottomNavigationBar: AppShellBar(
-        currentIndex: widget.navigationShell.currentIndex,
-        onSelect: _select,
-        onCentreAction: () => showCentreActionSheet(context),
+    return PopScope(
+      canPop: widget.navigationShell.currentIndex == AppShellSelection.home,
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (didPop) {
+          return;
+        }
+        // Android's back gesture: leave the section first, then the app.
+        _select(AppShellSelection.home);
+      },
+      child: Scaffold(
+        body: AppShellSelection(
+          select: _select,
+          child: FadeTransition(opacity: _fade, child: widget.navigationShell),
+        ),
+        bottomNavigationBar: AppShellBar(
+          currentIndex: widget.navigationShell.currentIndex,
+          onSelect: _select,
+          onCentreAction: () => showCentreActionSheet(context),
+        ),
       ),
     );
   }
