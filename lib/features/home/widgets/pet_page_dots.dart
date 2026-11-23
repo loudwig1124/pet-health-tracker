@@ -96,7 +96,7 @@ double _sizeForDistance(int distance) {
 
 /// The dot row: a warm pill of 6 px dots with a 44 px tall tap strip. Tapping
 /// anywhere on a dot (or on the strip above/below it) jumps to that pet.
-class PetPageDots extends StatelessWidget {
+class PetPageDots extends StatefulWidget {
   const PetPageDots({
     super.key,
     required this.petCount,
@@ -107,6 +107,18 @@ class PetPageDots extends StatelessWidget {
   final int petCount;
   final int currentIndex;
   final ValueChanged<int> onSelected;
+
+  @override
+  State<PetPageDots> createState() => _PetPageDotsState();
+}
+
+class _PetPageDotsState extends State<PetPageDots> {
+  /// Set while the user holds the dots; the value is the dot under the finger.
+  int? _scrubIndex;
+
+  int get petCount => widget.petCount;
+  int get currentIndex => widget.currentIndex;
+  ValueChanged<int> get onSelected => widget.onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -136,6 +148,29 @@ class PetPageDots extends StatelessWidget {
             onTapUp: (TapUpDetails details) => onSelected(
               dots[_nearestDot(dots, details.localPosition.dx)].index,
             ),
+            // Press and hold turns the dots into a scrubber: slide along the
+            // strip to jump between pets, release to settle on the last one.
+            onLongPressStart: (LongPressStartDetails details) {
+              setState(() {
+                _scrubIndex =
+                    dots[_nearestDot(dots, details.localPosition.dx)].index;
+              });
+            },
+            onLongPressMoveUpdate: (LongPressMoveUpdateDetails details) {
+              final int next =
+                  dots[_nearestDot(dots, details.localPosition.dx)].index;
+              if (next != _scrubIndex) {
+                setState(() => _scrubIndex = next);
+                onSelected(next);
+              }
+            },
+            onLongPressEnd: (LongPressEndDetails details) {
+              final int? last = _scrubIndex;
+              setState(() => _scrubIndex = null);
+              if (last != null) {
+                onSelected(last);
+              }
+            },
             child: Center(
               child: Container(
                 height: kDotPillHeight,
@@ -149,7 +184,10 @@ class PetPageDots extends StatelessWidget {
                   children: <Widget>[
                     for (int i = 0; i < dots.length; i++) ...<Widget>[
                       if (i > 0) const SizedBox(width: kDotGap),
-                      _Dot(dot: dots[i]),
+                      _Dot(
+                        dot: dots[i],
+                        emphasised: _scrubIndex == dots[i].index,
+                      ),
                     ],
                   ],
                 ),
@@ -181,9 +219,12 @@ class PetPageDots extends StatelessWidget {
 }
 
 class _Dot extends StatelessWidget {
-  const _Dot({required this.dot});
+  const _Dot({required this.dot, this.emphasised = false});
 
   final PageDot dot;
+
+  /// True while the scrubber is over this dot, before the release commits it.
+  final bool emphasised;
 
   @override
   Widget build(BuildContext context) {
@@ -192,7 +233,7 @@ class _Dot extends StatelessWidget {
       width: dot.size,
       height: dot.size,
       decoration: BoxDecoration(
-        color: dot.isCurrent
+        color: (dot.isCurrent || emphasised)
             ? AppColors.accent
             : statusBackground(AppColors.secondary, AppColors.hairline),
         shape: BoxShape.circle,
