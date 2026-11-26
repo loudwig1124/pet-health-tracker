@@ -1,5 +1,4 @@
-/// The sheet opened by the raised centre action: the household's three
-/// create flows.
+/// The sheet opened by the raised centre action: the household's create flows.
 ///
 /// Every row closes this sheet and opens the real form, so the shell never
 /// owns form state. Booking lands on Appointments; logging lands on Journal.
@@ -12,10 +11,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../domain/models/journal_entry.dart';
 import '../../domain/models/pet.dart';
+import '../../domain/models/vaccine_type.dart';
 import '../navigation_requests.dart';
 import '../../features/appointments/appointment_form_sheet.dart';
 import '../../features/home/widgets/quick_log_form_sheet.dart';
 import '../../features/pets/forms/health_record_form_sheet.dart';
+import '../../features/pets/forms/vaccination_form_sheet.dart';
 import '../../features/pets/pet_chooser_sheet.dart';
 import '../../ui/kit/app_sheet.dart';
 import '../../ui/kit/list_row.dart';
@@ -27,7 +28,7 @@ import '../app_services.dart';
 import '../router.dart';
 
 /// One choice from the centre-action sheet.
-enum CentreAction { bookVisit, logEntry, healthRecord }
+enum CentreAction { bookVisit, logEntry, vaccination, healthRecord }
 
 /// Opens the centre-action sheet and runs the chosen flow.
 Future<void> showCentreActionSheet(BuildContext context) async {
@@ -44,6 +45,8 @@ Future<void> showCentreActionSheet(BuildContext context) async {
       await _bookVisit(context, services);
     case CentreAction.logEntry:
       await _logEntry(context, services);
+    case CentreAction.vaccination:
+      await _addVaccination(context, services);
     case CentreAction.healthRecord:
       await _addHealthRecord(context, services);
   }
@@ -85,6 +88,35 @@ Future<void> _logEntry(BuildContext context, AppServices services) async {
   NavigationRequests.bumpHousehold();
   _showMessage(context, '${entry.kind.label} logged.');
   GoRouter.of(context).go(Routes.journal);
+}
+
+Future<void> _addVaccination(BuildContext context, AppServices services) async {
+  final Pet? pet = await showPetChooserSheet(
+    context,
+    services: services,
+    title: 'Add a vaccination',
+    message: 'Which pet was vaccinated?',
+  );
+  if (pet == null || !context.mounted) {
+    return;
+  }
+  // Resolve the catalog before touching the context again: using `context`
+  // after an await is exactly what the lint forbids.
+  final List<VaccineType> types = await services.vaccineTypes.list();
+  if (!context.mounted) {
+    return;
+  }
+  final bool? saved = await showVaccinationForm(
+    context,
+    services: services,
+    petId: pet.id,
+    vaccineTypes: types,
+  );
+  if (saved != true || !context.mounted) {
+    return;
+  }
+  NavigationRequests.bumpHousehold();
+  _showMessage(context, 'Vaccination saved for ${pet.name}.');
 }
 
 Future<void> _addHealthRecord(
@@ -137,13 +169,13 @@ class CentreActionSheet extends StatelessWidget {
             padding: EdgeInsets.only(bottom: AppSpacing.sm),
           ),
           Text(
-            'Log a moment, book a visit or add a health note.',
+            'Book a visit, log the day, or record a shot.',
             style: AppTextStyles.body.copyWith(color: AppColors.secondary),
           ),
           const SizedBox(height: AppSpacing.md),
           ListRow(
             key: const ValueKey<String>('centre-action-book'),
-            title: 'Book a vet visit',
+            title: 'Book a vet appointment',
             subtitle: 'Pick a pet, a clinic and a time',
             leading: const Icon(Icons.event_outlined, color: AppColors.accent),
             trailing: const Icon(
@@ -154,7 +186,7 @@ class CentreActionSheet extends StatelessWidget {
           ),
           ListRow(
             key: const ValueKey<String>('centre-action-log'),
-            title: 'Log an entry',
+            title: 'Log a journal entry',
             subtitle: 'Walk, feeding, note or symptom',
             leading: const Icon(
               Icons.edit_note_outlined,
@@ -165,6 +197,20 @@ class CentreActionSheet extends StatelessWidget {
               color: AppColors.secondary,
             ),
             onTap: () => choose(CentreAction.logEntry),
+          ),
+          ListRow(
+            key: const ValueKey<String>('centre-action-vaccination'),
+            title: 'Add a vaccination',
+            subtitle: 'Record a dose for one pet',
+            leading: const Icon(
+              Icons.vaccines_outlined,
+              color: AppColors.accent,
+            ),
+            trailing: const Icon(
+              Icons.chevron_right,
+              color: AppColors.secondary,
+            ),
+            onTap: () => choose(CentreAction.vaccination),
           ),
           ListRow(
             key: const ValueKey<String>('centre-action-health'),

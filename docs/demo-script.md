@@ -81,9 +81,10 @@ toggle at the end is the reset.
 ## 2:00 — Book a visit (45 s)
 
 1. Tap the raised centre **+**.
-2. The quick-action sheet shows the three real create flows: *Book a vet visit*,
-   *Log an entry*, *Add a health record*.
-3. Tap **Book a vet visit**, then fill: Pet **Bella**, Clinic `City Vet`, Purpose
+2. The quick-action sheet shows the four real create flows: *Book a vet
+   appointment*, *Log a journal entry*, *Add a vaccination*, *Add a health
+   record*.
+3. Tap **Book a vet appointment**, then fill: Pet **Bella**, Clinic `City Vet`, Purpose
    `Booster follow-up`, tomorrow at 9:30, **Book visit**.
 4. The sheet closes with a confirmation and the app lands on **Appointments →
    Upcoming** with the City Vet visit at the top.

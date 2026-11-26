@@ -128,8 +128,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('QUICK ACTIONS'), findsOneWidget);
-    expect(find.text('Book a vet visit'), findsOneWidget);
-    expect(find.text('Log an entry'), findsOneWidget);
+    expect(find.text('Book a vet appointment'), findsOneWidget);
+    expect(find.text('Log a journal entry'), findsOneWidget);
+    expect(find.text('Add a vaccination'), findsOneWidget);
     expect(find.text('Add a health record'), findsOneWidget);
     expect(find.text('Soon'), findsNothing);
 
@@ -268,4 +269,31 @@ void main() {
       <String>['Home', 'Journal', 'Appointments', 'Profile'],
     );
   });
+
+  testWidgets('the centre action can record a vaccination', (
+    WidgetTester tester,
+  ) async {
+    await pumpApp(tester);
+
+    await tester.tap(find.byKey(const ValueKey<String>('centre-action')));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('centre-action-vaccination')),
+    );
+    await settleAsync(tester);
+    await tester.pumpAndSettle();
+
+    // The chooser, then the real vaccination form for that pet.
+    expect(find.text('Which pet was vaccinated?'), findsOneWidget);
+    await tester.tap(
+      find.byKey(const ValueKey<String>('pet-chooser-row-9001')),
+    );
+    await settleAsync(tester);
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('vaccination-form-save')),
+      findsOneWidget,
+    );
+  });
+
 }

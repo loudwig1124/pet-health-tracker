@@ -14,8 +14,8 @@ database on the device is the only source of truth.
 | **Pet page** | A full-page photo (or drawn portrait) with a two-stop sheet: resting shows the name, worst due status and the vaccine that needs attention; raised reveals every vaccine and the append-only medical history. Reached by tapping a Home pet card or a Profile pet row. |
 | **Welcome** | First-run onboarding for an empty household: your name, your first pet, or one tap to start with the sample household. |
 
-The raised centre button in the tab bar is the create menu: book a vet visit, log
-an entry, or add a health record. Moving between the four destinations and into
+The raised centre button in the tab bar is the create menu: book a vet
+appointment, log a journal entry, record a vaccination, or add a health record. Moving between the four destinations and into
 the pet page is animated — the section fade and the page slide are deliberate.
 
 ## Running it
@@ -152,7 +152,7 @@ Screenshots of the running app can be regenerated without a device:
 
 ## Gestures and shortcuts
 
-- **Centre `+`** — book a visit, log an entry, add a health record.
+- **Centre `+`** — book an appointment, log a journal entry, add a vaccination, add a health record.
 - **Quick-log chip** — tap saves that kind at the current moment; the confirmation
   offers Undo for three seconds. **Long-press** opens the full form (date, time,
   note, duration).
