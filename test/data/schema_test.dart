@@ -231,31 +231,29 @@ void main() {
     await insertHealthRecord(petId);
   });
 
-  test('health records are append-only', () async {
+  test('health records are editable and deletable (schema v2)', () async {
     final int petId = await insertPet();
     final int recordId = await insertHealthRecord(petId);
 
-    expect(
-      () => harness.db.update(
-        'health_record',
-        <String, Object?>{'treatment': 'Rewritten'},
-        where: 'id = ?',
-        whereArgs: <Object?>[recordId],
-      ),
-      throwsA(isA<DatabaseException>()),
-    );
-    expect(
-      () => harness.db.delete(
-        'health_record',
-        where: 'id = ?',
-        whereArgs: <Object?>[recordId],
-      ),
-      throwsA(isA<DatabaseException>()),
+    await harness.db.update(
+      'health_record',
+      <String, Object?>{'treatment': 'Rewritten'},
+      where: 'id = ?',
+      whereArgs: <Object?>[recordId],
     );
     final List<Map<String, Object?>> rows = await harness.db.query(
       'health_record',
+      where: 'id = ?',
+      whereArgs: <Object?>[recordId],
     );
-    expect(rows, hasLength(1));
+    expect(rows.single['treatment'], 'Rewritten');
+
+    await harness.db.delete(
+      'health_record',
+      where: 'id = ?',
+      whereArgs: <Object?>[recordId],
+    );
+    expect(await harness.db.query('health_record'), isEmpty);
   });
 
   test(
@@ -277,7 +275,6 @@ void main() {
         petId: petId,
       );
 
-      // The append-only DELETE trigger allows the pet-delete cascade.
       await harness.db.delete(
         'pet',
         where: 'id = ?',
@@ -298,13 +295,10 @@ void main() {
     },
   );
 
-  test('the append-only triggers are installed', () async {
+  test('the v2 schema carries no append-only triggers', () async {
     final List<Map<String, Object?>> rows = await harness.db.rawQuery(
       "SELECT name FROM sqlite_master WHERE type = 'trigger' ORDER BY name",
     );
-    expect(
-      rows.map((Map<String, Object?> row) => row['name']).toList(),
-      <String>['health_record_no_delete', 'health_record_no_update'],
-    );
+    expect(rows, isEmpty);
   });
 }

@@ -2,7 +2,7 @@
 
 An offline, phone-first pet health and vet appointment tracker for one household:
 one owner, several pets, a shared journal, vet visits, vaccinations and
-append-only clinical notes. No accounts, no network, no backend — the SQLite
+clinical notes. No accounts, no network, no backend — the SQLite
 database on the device is the only source of truth.
 
 | Destination | What it does |
@@ -11,7 +11,8 @@ database on the device is the only source of truth.
 | **Journal** | The household feed, newest first, grouped Today / Yesterday / full date, with a per-pet filter. Tap a row to edit its time, note and duration, or delete it. |
 | **Appointments** | Upcoming / Past toggle with a per-pet filter. Tap a visit to complete it, cancel it with a reason, mark a no-show (only after the scheduled time), reschedule it, or jump to that pet's filtered list. |
 | **Profile** | Owner details (editable), the pet list, and four settings rows: due-soon window, weight unit, the sample-data toggle and Reset household. |
-| **Pet page** | A full-page photo (or drawn portrait) with a two-stop sheet: resting shows the name, worst due status and the vaccine that needs attention; raised reveals every vaccine and the append-only medical history. Reached by tapping a Home pet card or a Profile pet row. |
+| **Pet page** | A full-page photo (or drawn portrait) with a two-stop sheet: resting shows the name, worst due status and the vaccine that needs attention; raised reveals every vaccine and the medical history. Tap a vaccine or a note to
+edit or delete it. Reached by tapping a Home pet card or a Profile pet row. |
 | **Welcome** | First-run onboarding for an empty household: your name, your first pet, or one tap to start with the sample household. |
 
 The raised centre button in the tab bar is the create menu: book a vet
@@ -194,8 +195,9 @@ domain/data API, conventions and the definition of done.
   replaced or removed photo is deleted after the form saves.
 - Date-only columns are `YYYY-MM-DD`; instants are ISO-8601 UTC. The app formats
   them for the device zone with `intl`.
-- Clinical notes (`health_record`) are append-only: the schema's triggers reject
-  updates and deletes, and the UI offers no edit or delete affordance.
+- Clinical notes and vaccinations are editable: tap a row on the pet page to
+  correct or delete it. An earlier design made notes append-only; schema v2
+  dropped those triggers so a mis-clicked diagnosis is fixable.
 - Journal entries stay editable. Deleting a pet removes its journal, vaccination
   and clinical rows and leaves its appointments under the household.
 

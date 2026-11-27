@@ -157,6 +157,31 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
     }
   }
 
+  Future<void> _editVaccination(Vaccination vaccination) async {
+    final bool? saved = await showVaccinationForm(
+      context,
+      services: _services,
+      petId: widget.petId,
+      vaccineTypes: _controller.vaccineTypes,
+      existing: vaccination,
+    );
+    if ((saved ?? false) && mounted) {
+      await _refresh();
+    }
+  }
+
+  Future<void> _editHealthRecord(HealthRecord record) async {
+    final bool? saved = await showHealthRecordForm(
+      context,
+      services: _services,
+      petId: widget.petId,
+      existing: record,
+    );
+    if ((saved ?? false) && mounted) {
+      await _refresh();
+    }
+  }
+
   Future<void> _addHealthRecord() async {
     final bool? saved = await showHealthRecordForm(
       context,
@@ -405,6 +430,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
                   vaccination: vaccination,
                   today: _controller.today,
                   windowDays: _controller.dueSoonWindowDays,
+                  onTap: () => _editVaccination(vaccination),
                 ),
                 const SizedBox(height: AppSpacing.sm),
               ],
@@ -440,6 +466,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
                   _HealthRecordRow(
                     key: ValueKey<String>('health-record-row-${record.id}'),
                     record: record,
+                    onTap: () => _editHealthRecord(record),
                   ),
                   const SizedBox(height: AppSpacing.sm),
                 ],
@@ -587,11 +614,13 @@ class _VaccineRow extends StatelessWidget {
     required this.vaccination,
     required this.today,
     required this.windowDays,
+    this.onTap,
   });
 
   final Vaccination vaccination;
   final DateTime today;
   final int windowDays;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -606,12 +635,18 @@ class _VaccineRow extends StatelessWidget {
         : '${formatFullDate(vaccination.vaccinationDate)} · next due '
               '${formatFullDate(nextDueDate)}';
     return AppCard(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: 10,
-      ),
+      padding: EdgeInsets.zero,
       radius: AppRadii.chip,
-      child: Row(
+      child: InkWell(
+        key: ValueKey<String>('vaccine-row-tap-${vaccination.id}'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadii.chip),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: 10,
+          ),
+          child: Row(
         children: <Widget>[
           Expanded(
             child: Column(
@@ -639,17 +674,19 @@ class _VaccineRow extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           AppChip.due(status),
         ],
+          ),
+        ),
       ),
     );
   }
 }
 
-/// One clinical note. There is no edit or delete affordance by design: the
-/// records are append-only at the repository and schema level.
+/// One clinical note. Tap to edit or delete it (editable since schema v2).
 class _HealthRecordRow extends StatelessWidget {
-  const _HealthRecordRow({super.key, required this.record});
+  const _HealthRecordRow({super.key, required this.record, this.onTap});
 
   final HealthRecord record;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -664,12 +701,18 @@ class _HealthRecordRow extends StatelessWidget {
       treatment == null || treatment.isEmpty ? null : treatment,
     ].whereType<String>().join(' · ');
     return AppCard(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: 10,
-      ),
+      padding: EdgeInsets.zero,
       radius: AppRadii.chip,
-      child: Column(
+      child: InkWell(
+        key: ValueKey<String>('health-record-row-tap-${record.id}'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadii.chip),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: 10,
+          ),
+          child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -696,6 +739,8 @@ class _HealthRecordRow extends StatelessWidget {
             ),
           ],
         ],
+          ),
+        ),
       ),
     );
   }

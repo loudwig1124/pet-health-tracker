@@ -9,4 +9,9 @@ abstract class HealthRecordRepository {
   Future<List<HealthRecord>> listForPet(int petId);
 
   Future<HealthRecord> append(HealthRecordDraft draft);
+
+  /// Rewrites an existing note. Clinical notes are editable since schema v2.
+  Future<HealthRecord> update(int id, HealthRecordDraft draft);
+
+  Future<void> delete(int id);
 }

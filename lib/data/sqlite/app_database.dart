@@ -21,8 +21,10 @@ class AppDatabase {
   static const String fileName = 'pet_health_tracker.db';
 
   /// Hand-written migrations: bump this and add an `onUpgrade` step when the
-  /// DDL changes (the MVP ships schema version 1 only).
-  static const int schemaVersion = 1;
+  /// DDL changes.
+  ///
+  /// v2 — health records became editable, so the append-only triggers are gone.
+  static const int schemaVersion = 2;
 
   /// Opens (and creates) the database at [path].
   ///
@@ -49,11 +51,23 @@ class AppDatabase {
             await db.execute(statement);
           }
         },
-        onUpgrade: (Database db, int oldVersion, int newVersion) {
-          throw StateError(
-            'No migration from schema $oldVersion to $newVersion. '
-            'Add one in lib/data/sqlite/app_database.dart before shipping.',
-          );
+        onUpgrade: (Database db, int oldVersion, int newVersion) async {
+          // v2: clinical notes may be edited and deleted. Old installs keep the
+          // triggers until they are dropped here.
+          if (oldVersion < 2) {
+            await db.execute(
+              'DROP TRIGGER IF EXISTS health_record_no_update',
+            );
+            await db.execute(
+              'DROP TRIGGER IF EXISTS health_record_no_delete',
+            );
+          }
+          if (oldVersion > 2) {
+            throw StateError(
+              'No migration from schema $oldVersion to $newVersion. '
+              'Add one in lib/data/sqlite/app_database.dart before shipping.',
+            );
+          }
         },
       ),
     );

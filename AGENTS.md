@@ -8,7 +8,7 @@ instead of silently working around it.
 
 An offline pet health and vet appointment tracker for a single household: one
 owner, several pets, a household journal, vet appointments, vaccinations and
-append-only clinical notes. Phone only (portrait-first), no auth, no network, no
+editable clinical notes. Phone only (portrait-first), no auth, no network, no
 backend, no analytics. The database is the only source of truth.
 
 ## Stack (locked — do not add alternatives)
@@ -165,7 +165,7 @@ for widgets that must render without services.
 services.owners         // OwnerRepository:  load(), ensureDefault(), save(OwnerDraft)
 services.pets           // PetRepository:    list(), findById(id), create(PetDraft), update(id, PetDraft), delete(id)
 services.journal        // JournalEntryRepository: listHousehold({petId, limit}), listForPet(id, {limit}), findById, create(JournalDraft), update(id, JournalDraft), delete(id)
-services.healthRecords  // HealthRecordRepository: listForPet(id), append(HealthRecordDraft)  — append-only
+services.healthRecords  // HealthRecordRepository: listForPet(id), append/update(id, draft), delete(id)
 services.vaccinations   // VaccinationRepository: listForPet(id), append(VaccinationDraft)
 services.vaccineTypes   // VaccineTypeRepository: list()
 services.appointments   // AppointmentRepository: listUpcoming({now, petId}), listHistory({now, petId}), findById, create(AppointmentDraft), updateStatus(id, status, {now, cancelReason}), reschedule(id, {newScheduledAt, now})
@@ -265,9 +265,10 @@ Date/number labels: `lib/ui/format/app_formats.dart` (`formatDayMonth`,
   cancelled rows always carry `cancel_reason`. Deleting a pet leaves its
   appointments (`pet_id` becomes `NULL`) but deletes journal/vaccination/health
   rows.
-- `health_record` is append-only: no update/delete API, and the DDL triggers
-  reject both (the only allowed delete is the pet-delete cascade). Clinical notes
-  get no edit or delete affordance.
+- `health_record` is editable since schema v2 (a mis-clicked diagnosis must be
+  fixable): `append`, `update(id, draft)` and `delete(id)` all exist, and the v1
+  append-only triggers were dropped by the v2 migration. Vaccinations follow the
+  same shape.
 - Migrations are hand-written in `lib/data/sqlite/app_database.dart`; version 1
   ships now. Never change an existing table without a migration step.
 - `db/schema.sql` must stay importable by
@@ -294,5 +295,5 @@ Date/number labels: `lib/ui/format/app_formats.dart` (`formatDayMonth`,
    suite — another member may be mid-edit; report exactly what you ran).
 3. Screens use the kit/theme and the domain rules (no duplicated due-date logic,
    no local status colours, no SQL).
-4. Journal entries are editable; clinical records stay append-only.
+4. Journal entries and clinical records are both editable.
 5. Report the exact commands, their output, and every file touched.

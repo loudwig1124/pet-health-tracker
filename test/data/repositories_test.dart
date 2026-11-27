@@ -634,4 +634,56 @@ void main() {
     expect(utcDay.pets.single.dueStatus, VaccinationDueStatus.dueSoon);
   });
 
+
+  test('a clinical note can be corrected and removed', () async {
+    final SqliteHarness harness = await openHarness(seedDemo: true);
+    addTearDown(harness.dispose);
+    final HealthRecord note = (await harness.services.healthRecords
+        .listForPet(9001))
+        .first;
+
+    final HealthRecord corrected = await harness.services.healthRecords.update(
+      note.id,
+      HealthRecordDraft(
+        petId: note.petId,
+        recordedOn: note.recordedOn,
+        condition: note.condition,
+        diagnosis: 'Otitis externa, resolved',
+        vetName: 'Dr. Cruz',
+      ),
+    );
+    expect(corrected.diagnosis, contains('resolved'));
+
+    await harness.services.healthRecords.delete(note.id);
+    final List<HealthRecord> left = await harness.services.healthRecords
+        .listForPet(9001);
+    expect(left.where((HealthRecord r) => r.id == note.id), isEmpty);
+  });
+
+  test('a vaccination dose can be corrected and removed', () async {
+    final SqliteHarness harness = await openHarness(seedDemo: true);
+    addTearDown(harness.dispose);
+    final Vaccination dose = (await harness.services.vaccinations.listForPet(
+      9001,
+    )).first;
+
+    final Vaccination corrected = await harness.services.vaccinations.update(
+      dose.id,
+      VaccinationDraft(
+        petId: dose.petId,
+        vaccineTypeId: dose.vaccineTypeId,
+        vaccineName: dose.vaccineName,
+        vaccinationDate: dose.vaccinationDate,
+        nextDueDate: DateTime.utc(2027, 12, 1),
+        vetName: 'Dr. Cruz',
+      ),
+    );
+    expect(corrected.nextDueDate, DateTime.utc(2027, 12, 1));
+
+    await harness.services.vaccinations.delete(dose.id);
+    final List<Vaccination> left = await harness.services.vaccinations
+        .listForPet(9001);
+    expect(left.where((Vaccination v) => v.id == dose.id), isEmpty);
+  });
+
 }

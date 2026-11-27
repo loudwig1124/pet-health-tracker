@@ -56,4 +56,46 @@ class SqliteVaccinationRepository implements VaccinationRepository {
     final int id = await _db.insert(_table, values);
     return vaccinationFromRow(<String, Object?>{...values, 'id': id});
   }
+
+  @override
+  Future<Vaccination> update(int id, VaccinationDraft draft) async {
+    final DateTime vaccinationDate = dateOnly(draft.vaccinationDate);
+    final DateTime? nextDueDate = draft.nextDueDate == null
+        ? null
+        : dateOnly(draft.nextDueDate!);
+    if (nextDueDate != null && !nextDueDate.isAfter(vaccinationDate)) {
+      throw ArgumentError.value(
+        draft.nextDueDate,
+        'nextDueDate',
+        'must be after the vaccination date',
+      );
+    }
+    final Vaccination vaccination = Vaccination(
+      id: id,
+      petId: draft.petId,
+      vaccineTypeId: draft.vaccineTypeId,
+      vaccineName: trimRequired(draft.vaccineName),
+      vaccinationDate: vaccinationDate,
+      nextDueDate: nextDueDate,
+      vetName: trimToNull(draft.vetName),
+      createdAt: _clock().toUtc(),
+    );
+    final Map<String, Object?> values = vaccinationToRow(vaccination)
+      ..remove('id');
+    final int changed = await _db.update(
+      _table,
+      values,
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+    );
+    if (changed == 0) {
+      throw StateError('Vaccination $id no longer exists');
+    }
+    return vaccinationFromRow(<String, Object?>{...values, 'id': id});
+  }
+
+  @override
+  Future<void> delete(int id) async {
+    await _db.delete(_table, where: 'id = ?', whereArgs: <Object?>[id]);
+  }
 }

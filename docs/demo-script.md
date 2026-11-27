@@ -60,7 +60,8 @@ toggle at the end is the reset.
    - The photo stays exactly where it is and blurs; the sheet rises to reveal all
      vaccines and **MEDICAL HISTORY** (otitis externa, Dr. Cruz).
    - Narration: “The photo is painted once and never resizes — only the sheet and
-     its blur travel. Clinical notes are append-only; the UI offers no edit.”
+     its blur travel. A mis-clicked note or dose can be corrected — tap it to
+     edit.”
 3. Tap **+ Add** next to VACCINES.
    - The form opens with the vaccine type selected, today’s date, and the next
      due date prefilled from the catalog interval.

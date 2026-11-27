@@ -1,4 +1,4 @@
-/// SQLite health-record repository. Append-only: insert and read only.
+/// SQLite health-record repository: insert, read, update and delete.
 library;
 
 import 'package:sqflite/sqflite.dart';
@@ -50,5 +50,41 @@ class SqliteHealthRecordRepository implements HealthRecordRepository {
     final Map<String, Object?> values = healthRecordToRow(record)..remove('id');
     final int id = await _db.insert(_table, values);
     return healthRecordFromRow(<String, Object?>{...values, 'id': id});
+  }
+
+  @override
+  Future<HealthRecord> update(int id, HealthRecordDraft draft) async {
+    final String? condition = trimToNull(draft.condition);
+    final String? diagnosis = trimToNull(draft.diagnosis);
+    if (condition == null && diagnosis == null) {
+      throw ArgumentError('A clinical note needs a condition or a diagnosis');
+    }
+    final HealthRecord record = HealthRecord(
+      id: id,
+      petId: draft.petId,
+      recordedOn: dateOnly(draft.recordedOn),
+      condition: condition,
+      diagnosis: diagnosis,
+      treatment: trimToNull(draft.treatment),
+      prescribedMedication: trimToNull(draft.prescribedMedication),
+      vetName: trimToNull(draft.vetName),
+      createdAt: _clock().toUtc(),
+    );
+    final Map<String, Object?> values = healthRecordToRow(record)..remove('id');
+    final int changed = await _db.update(
+      _table,
+      values,
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+    );
+    if (changed == 0) {
+      throw StateError('Health record $id no longer exists');
+    }
+    return healthRecordFromRow(<String, Object?>{...values, 'id': id});
+  }
+
+  @override
+  Future<void> delete(int id) async {
+    await _db.delete(_table, where: 'id = ?', whereArgs: <Object?>[id]);
   }
 }

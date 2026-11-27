@@ -177,23 +177,3 @@ CREATE TABLE appointment (
 CREATE INDEX idx_appointment_schedule ON appointment (scheduled_at);
 CREATE INDEX idx_appointment_pet ON appointment (pet_id, scheduled_at);
 
--- -----------------------------------------------------------------------------
--- Append-only enforcement for health_record (a clinical note is evidence).
---   * UPDATE is always rejected.
---   * DELETE is rejected while the parent pet exists. When the pet itself is
---     deleted, SQLite's ON DELETE CASCADE runs while the pet row is already
---     gone, so this trigger allows that one referential cleanup and nothing
---     else. Deleting the row directly from the UI/repository still aborts.
--- -----------------------------------------------------------------------------
-CREATE TRIGGER health_record_no_update
-BEFORE UPDATE ON health_record
-BEGIN
-  SELECT RAISE(ABORT, 'health_record is append-only: rows cannot be updated');
-END;
-
-CREATE TRIGGER health_record_no_delete
-BEFORE DELETE ON health_record
-WHEN EXISTS (SELECT 1 FROM pet WHERE pet.id = OLD.pet_id)
-BEGIN
-  SELECT RAISE(ABORT, 'health_record is append-only: rows cannot be deleted');
-END;

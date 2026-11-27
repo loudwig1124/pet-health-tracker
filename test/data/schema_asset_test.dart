@@ -19,7 +19,17 @@ void main() {
   });
 
   test('trigger bodies stay whole (internal semicolons are not split)', () {
-    final String script = File('db/schema.sql').readAsStringSync();
+    // The v2 schema ships no triggers, but the splitter must keep supporting
+    // them: a BEGIN ... END body contains semicolons of its own.
+    const String script = '''
+CREATE TABLE t (id INTEGER PRIMARY KEY);
+CREATE TRIGGER t_no_delete
+BEFORE DELETE ON t
+BEGIN
+  SELECT RAISE(ABORT, 'no');
+END;
+CREATE TABLE u (id INTEGER PRIMARY KEY);
+''';
     final List<String> statements = schemaStatements(script);
 
     final List<String> triggers = statements
@@ -28,11 +38,9 @@ void main() {
               statement.toUpperCase().startsWith('CREATE TRIGGER'),
         )
         .toList(growable: false);
-    expect(triggers, hasLength(2));
-    for (final String trigger in triggers) {
-      expect(trigger.trimRight(), endsWith('END'));
-      expect(trigger, contains('RAISE(ABORT'));
-    }
+    expect(triggers, hasLength(1));
+    expect(triggers.single.trimRight(), endsWith('END'));
+    expect(triggers.single, contains('RAISE(ABORT'));
     expect(
       statements.where((String statement) => statement == 'END'),
       isEmpty,
