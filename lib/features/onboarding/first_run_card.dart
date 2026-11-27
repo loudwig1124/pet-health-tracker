@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import '../../app/app_services.dart';
 import '../../domain/models/owner.dart';
 import '../../domain/models/pet.dart';
+import '../../domain/rules/owner_validation.dart';
+import '../../domain/rules/pet_validation.dart';
 import '../../domain/species.dart';
 import '../../ui/kit/app_card.dart';
 import '../../ui/kit/primary_button.dart';
@@ -49,20 +51,39 @@ class _FirstRunCardState extends State<FirstRunCard> {
   }
 
   Future<void> _create() async {
-    final String ownerName = _owner.text.trim();
-    final String petName = _pet.text.trim();
-    final String species = _species.trim();
-    final double? weight = double.tryParse(
-      _weight.text.trim().replaceAll(',', '.'),
+    // The same rules the Profile and pet forms use: no field is trusted just
+    // because it is the first screen the user sees.
+    final double? weight = parseWeightInput(_weight.text);
+    final String? weightError = weight == null
+        ? 'Weight should be between 0 and ${kMaxWeightKg.toInt()} kg, '
+              'with up to 2 decimals.'
+        : null;
+
+    final OwnerValidationResult ownerCheck = validateOwnerDraft(
+      OwnerDraft(name: _owner.text),
     );
-    if (ownerName.isEmpty || petName.isEmpty || species.isEmpty) {
-      setState(() => _error = 'Add your name, your pet\'s name and species.');
+    final String? nameError = ownerCheck[OwnerField.name];
+
+    final PetValidationResult petCheck = validatePetDraft(
+      PetDraft(
+        name: _pet.text,
+        species: _species,
+        sex: PetSex.unknown,
+        dateOfBirth: _birthday,
+        weightKg: weight ?? 1,
+      ),
+      today: widget.services.today(),
+    );
+    // The weight is reported once, with its own message.
+    final String? petError =
+        petCheck[PetField.name] ?? petCheck[PetField.species];
+
+    final String? error = nameError ?? petError ?? weightError;
+    if (error != null) {
+      setState(() => _error = error);
       return;
     }
-    if (weight == null || weight <= 0) {
-      setState(() => _error = 'Weight should be a number above zero.');
-      return;
-    }
+
     setState(() {
       _saving = true;
       _error = null;
@@ -73,18 +94,18 @@ class _FirstRunCardState extends State<FirstRunCard> {
       final Owner current = await widget.services.owners.load();
       await widget.services.owners.save(
         OwnerDraft(
-          name: ownerName,
+          name: _owner.text.trim(),
           email: current.email,
           phone: current.phone,
         ),
       );
       await widget.services.pets.create(
         PetDraft(
-          name: petName,
-          species: species,
+          name: _pet.text.trim(),
+          species: _species.trim(),
           sex: PetSex.unknown,
           dateOfBirth: _birthday,
-          weightKg: weight,
+          weightKg: weight!,
         ),
       );
       widget.onDone();

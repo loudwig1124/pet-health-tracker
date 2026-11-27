@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/app_services.dart';
 import '../../domain/models/owner.dart';
+import '../../domain/rules/owner_validation.dart';
 import '../../ui/kit/app_sheet.dart';
 import '../../ui/kit/primary_button.dart';
 import '../../ui/theme/app_theme.dart';
@@ -43,6 +44,8 @@ class _OwnerFormSheetState extends State<OwnerFormSheet> {
 
   bool _saving = false;
   String? _nameError;
+  String? _emailError;
+  String? _phoneError;
   String? _saveError;
 
   @override
@@ -62,19 +65,31 @@ class _OwnerFormSheetState extends State<OwnerFormSheet> {
   }
 
   Future<void> _save() async {
-    final String name = _name.text.trim();
-    if (name.isEmpty) {
-      setState(() => _nameError = 'Add your name');
+    final OwnerDraft draft = OwnerDraft(
+      name: _name.text,
+      email: _email.text,
+      phone: _phone.text,
+    );
+    final OwnerValidationResult validation = validateOwnerDraft(draft);
+    setState(() {
+      _nameError = validation[OwnerField.name];
+      _emailError = validation[OwnerField.email];
+      _phoneError = validation[OwnerField.phone];
+    });
+    if (!validation.isValid) {
       return;
     }
     setState(() {
       _saving = true;
-      _nameError = null;
       _saveError = null;
     });
     try {
       await widget.services.owners.save(
-        OwnerDraft(name: name, email: _email.text, phone: _phone.text),
+        OwnerDraft(
+          name: draft.name.trim(),
+          email: draft.email.trim(),
+          phone: draft.phone.trim(),
+        ),
       );
       if (!mounted) {
         return;
@@ -119,14 +134,22 @@ class _OwnerFormSheetState extends State<OwnerFormSheet> {
               key: const ValueKey<String>('owner-form-email'),
               controller: _email,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(labelText: 'Email'),
+              onChanged: (String value) => setState(() => _emailError = null),
+              decoration: InputDecoration(
+                labelText: 'Email',
+                errorText: _emailError,
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
             TextField(
               key: const ValueKey<String>('owner-form-phone'),
               controller: _phone,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(labelText: 'Phone'),
+              onChanged: (String value) => setState(() => _phoneError = null),
+              decoration: InputDecoration(
+                labelText: 'Phone',
+                errorText: _phoneError,
+              ),
             ),
             if (_saveError != null) ...<Widget>[
               const SizedBox(height: AppSpacing.md),

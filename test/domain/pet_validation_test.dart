@@ -165,4 +165,36 @@ void main() {
     expect(formatWeightKg(12.44), '12.4 kg');
     expect(formatWeightKg(0), '0.0 kg');
   });
+
+  test('a numeric name is rejected', () {
+    expect(
+      validatePetDraft(
+        PetDraft(
+          name: '12345',
+          species: 'Dog',
+          sex: PetSex.unknown,
+          dateOfBirth: DateTime.utc(2022, 1, 1),
+          weightKg: 5,
+        ),
+        today: DateTime.utc(2026, 11, 27),
+      )[PetField.name],
+      isNotNull,
+    );
+  });
+
+  test('weight parsing rejects exponents and out-of-range values', () {
+    expect(parseWeightInput('4.5'), 4.5);
+    expect(parseWeightInput('4,5'), 4.5);
+    expect(parseWeightInput('12'), 12);
+    expect(parseWeightInput('1e5'), isNull);
+    expect(parseWeightInput('1e309'), isNull);
+    expect(parseWeightInput('0'), isNull);
+    expect(parseWeightInput('300'), 300);
+    expect(parseWeightInput('300.1'), isNull);
+    expect(parseWeightInput('1000'), isNull);
+    expect(parseWeightInput('4.567'), isNull);
+    expect(parseWeightInput('-4'), isNull);
+    expect(parseWeightInput('heavy'), isNull);
+  });
+
 }

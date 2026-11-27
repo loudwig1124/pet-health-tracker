@@ -101,8 +101,10 @@ class _PetFormSheetState extends State<PetFormSheet> {
   }
 
   Future<void> _save() async {
-    final double weight =
-        double.tryParse(_weight.text.trim().replaceAll(',', '.')) ?? 0;
+    // Same parser as onboarding: rejects exponents ("1e5"), more than two
+    // decimals, and anything over the 300 kg ceiling.
+    final double? parsedWeight = parseWeightInput(_weight.text);
+    final double weight = parsedWeight ?? 0;
     final PetDraft draft = PetDraft(
       name: _name.text,
       species: _species.text,
@@ -116,9 +118,14 @@ class _PetFormSheetState extends State<PetFormSheet> {
       draft,
       today: widget.services.today(),
     );
-    if (!result.isValid) {
+    final Map<PetField, String> errors = Map<PetField, String>.of(result.errors);
+    if (parsedWeight == null && _weight.text.trim().isNotEmpty) {
+      errors[PetField.weightKg] =
+          'Weight goes up to ${kMaxWeightKg.toInt()} kg, 2 decimals';
+    }
+    if (errors.isNotEmpty) {
       setState(() {
-        _errors = result.errors;
+        _errors = errors;
         _saveError = null;
       });
       return;

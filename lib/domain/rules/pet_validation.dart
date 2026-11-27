@@ -32,6 +32,27 @@ class PetValidationResult {
   String? operator [](PetField field) => errors[field];
 }
 
+/// One Unicode letter somewhere in the text: names are names, not numbers.
+final RegExp _hasLetter = RegExp(r'\p{L}', unicode: true);
+
+/// Weight input: 1–3 integer digits, optional comma/point and up to 2 decimals.
+/// Deliberately rejects exponent notation, which `double.tryParse` accepts
+/// ("1e5" is a very over-the-board pet).
+final RegExp _weightPattern = RegExp(r'^\d{1,3}([.,]\d{1,2})?$');
+
+/// The heaviest plausible pet, in kilograms. Anything above this is a typo.
+const double kMaxWeightKg = 300;
+
+/// Parses a weight field, or null when the text is not a usable weight.
+double? parseWeightInput(String raw) {
+  final String text = raw.trim();
+  if (!_weightPattern.hasMatch(text)) {
+    return null;
+  }
+  final double value = double.parse(text.replaceAll(',', '.'));
+  return value > 0 && value <= kMaxWeightKg ? value : null;
+}
+
 /// A microchip must be 9–15 digits (ISO 11784/11785 chips are 15).
 final RegExp _microchipPattern = RegExp(r'^\d{9,15}$');
 
@@ -55,6 +76,8 @@ PetValidationResult validatePetDraft(
   final String name = draft.name.trim();
   if (name.isEmpty) {
     errors[PetField.name] = 'A pet needs a name';
+  } else if (!_hasLetter.hasMatch(name)) {
+    errors[PetField.name] = 'A name needs at least one letter';
   } else if (name.length > 40) {
     errors[PetField.name] = 'Keep the name under 40 characters';
   }
@@ -62,6 +85,8 @@ PetValidationResult validatePetDraft(
   final String species = draft.species.trim();
   if (species.isEmpty) {
     errors[PetField.species] = 'Pick a species';
+  } else if (!_hasLetter.hasMatch(species)) {
+    errors[PetField.species] = 'A species needs at least one letter';
   } else if (species.length > 30) {
     errors[PetField.species] = 'Keep the species under 30 characters';
   }
@@ -79,10 +104,10 @@ PetValidationResult validatePetDraft(
     errors[PetField.dateOfBirth] = 'Check the birthday — that is over 40 years';
   }
 
-  if (draft.weightKg.isNaN || draft.weightKg <= 0) {
+  if (draft.weightKg.isNaN || draft.weightKg.isInfinite || draft.weightKg <= 0) {
     errors[PetField.weightKg] = 'Weight must be greater than zero';
-  } else if (draft.weightKg > 300) {
-    errors[PetField.weightKg] = 'Weight must be 300 kg or less';
+  } else if (draft.weightKg > kMaxWeightKg) {
+    errors[PetField.weightKg] = 'Weight must be ${kMaxWeightKg.toInt()} kg or less';
   }
 
   final String? microchip = normalizeMicrochip(draft.microchip);
